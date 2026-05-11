@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Scoring &amp; Funnel Experimentation · Elsie David</title>
+  <meta name="description" content="Case study: a methodology recreation of the lead scoring and experimentation work I led at Stripe, applied to a public marketing funnel dataset." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a class="name" href="../index.html">Elsie David</a>
+      <div class="links">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#about">About</a>
+        <a href="mailto:elsienanbam@gmail.com">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="case-header">
+    <div class="container">
+      <a class="case-back" href="../index.html">← Back to all work</a>
+      <div class="case-eyebrow">Case study · Analytics / Experimentation</div>
+      <h1>Lead scoring with a conversion-versus-quality trade-off</h1>
+      <p class="case-lede">
+        A faithful methodology recreation of the analytical pattern I used at Stripe to drive a 70% YoY lift in lead conversion — built on a public marketing funnel dataset so the code and reasoning are fully shareable.
+      </p>
+      <div class="case-meta">
+        <div class="case-meta-item"><div class="label">Role</div><div class="value">Data scientist (analytics)</div></div>
+        <div class="case-meta-item"><div class="label">Duration</div><div class="value">2026</div></div>
+        <div class="case-meta-item"><div class="label">Stack</div><div class="value">Python · pandas · scikit-learn · SQL</div></div>
+        <div class="case-meta-item"><div class="label">Inspired by</div><div class="value">Stripe GTM internship work</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-body">
+    <div class="container">
+
+      <section>
+        <h2>Why this case study exists</h2>
+        <p>
+          My Stripe work is the best evidence I have of shipping analytics that moved a business metric — but the data isn't public and the model itself is proprietary. So I recreated the <strong>analytical pattern</strong>, not the data, on an openly available marketing funnel dataset.
+        </p>
+        <p>
+          The pattern I want to demonstrate has three pieces: (1) lead funnel analysis to find high-signal attributes, (2) experiment design that handles the conversion-vs-quality trade-off rather than ignoring it, and (3) feature reweighting recommendations a scoring model can actually adopt.
+        </p>
+        <div class="callout">
+          <strong>Why this is the most interesting question in lead scoring.</strong> Most lead-scoring writeups optimize for "did the lead convert?" That's wrong. The real question is "did the lead convert <em>and stick</em>?" Optimizing only for conversion teaches your model to chase shallow signals that look great on dashboards and tank the downstream funnel.
+        </div>
+      </section>
+
+      <section>
+        <h2>The dataset</h2>
+        <div class="todo">Pick the dataset. Candidates: HubSpot's free CRM sample, the IBM Watson marketing customer value dataset, or the Bank Marketing UCI dataset. Document choice + caveats here.</div>
+        <p>
+          I'll use a public marketing funnel dataset that includes both top-of-funnel lead attributes and downstream conversion outcomes. The exact dataset and a download script live in the GitHub repo.
+        </p>
+      </section>
+
+      <section>
+        <h2>Step 1 — Funnel decomposition</h2>
+        <p>
+          Before touching a model, decompose the funnel into stage-by-stage conversion rates. This tells you where the leakage is and which attributes correlate with passage through each gate — not just final conversion.
+        </p>
+        <div class="todo">Insert funnel SQL query + stage-by-stage conversion bar chart from notebook.</div>
+
+        <h3>What I look for</h3>
+        <ul>
+          <li><strong>Stages where conversion drops sharply across an attribute</strong> (high signal).</li>
+          <li><strong>Attributes that predict early conversion but not downstream stick</strong> (the trap).</li>
+          <li><strong>Subgroups with too few observations to support firm claims</strong> (the discipline).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Step 2 — Feature behavior across groups</h2>
+        <p>
+          For each candidate scoring feature, I compare its behavior in the high-quality cohort versus the low-quality-but-converted cohort. Features that separate these cohorts are the ones worth upweighting.
+        </p>
+        <div class="todo">Insert feature comparison tables / SHAP-style plots from notebook.</div>
+      </section>
+
+      <section>
+        <h2>Step 3 — Experiment design for the trade-off</h2>
+        <p>
+          The mistake most lead-scoring experiments make: they A/B test on conversion rate and stop there. That's how scoring models drift toward shallow signals.
+        </p>
+        <p>
+          The design I'd run instead has two primary metrics, not one:
+        </p>
+        <ul>
+          <li><strong>Conversion rate</strong> at the top-of-funnel decision point.</li>
+          <li><strong>Downstream quality</strong> measured 30/60/90 days later — actual usage, retention, expansion.</li>
+        </ul>
+        <p>
+          The decision rule then explicitly trades off the two. Sometimes the right call is to accept slightly lower conversion in exchange for substantially higher downstream quality, depending on how much it costs to handle low-quality leads.
+        </p>
+
+        <div class="todo">Add the actual experiment write-up: hypothesis, power analysis, decision rule, simulated results on the public dataset.</div>
+      </section>
+
+      <section>
+        <h2>What I'd take into a new role</h2>
+        <p>
+          <strong>The data work is half the answer; the framing is the other half.</strong> The most useful thing I did at Stripe wasn't running the regression — it was reframing the team's success metric so we stopped optimizing for the wrong thing.
+        </p>
+        <p>
+          <strong>Lead scoring is a measurement problem before it's a modeling problem.</strong> If you can't measure downstream quality cleanly, you can't build a scoring model that captures it. Most of the value comes from instrumenting the right outcomes, not picking the right algorithm.
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div>Elsie David — Berkeley, CA</div>
+      <div>
+        <a href="../index.html">Home</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

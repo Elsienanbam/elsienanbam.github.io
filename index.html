@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elsie David — Data Scientist</title>
+  <meta name="description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS. Previously Stripe." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    /* Home-page-only styles (case studies use shared styles only) */
+    header { padding: 96px 0 72px; }
+    header h1 {
+      font-size: 44px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+    header .lede {
+      font-size: 19px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      max-width: 640px;
+      margin-bottom: 32px;
+    }
+    header .meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: var(--ink-faint);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    header .meta a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--rule);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    header .meta a:hover { color: var(--accent); border-color: var(--accent); }
+    section { padding: 56px 0; border-top: 1px solid var(--rule); }
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-faint);
+      margin-bottom: 32px;
+    }
+    .about p {
+      font-size: 17px;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+      line-height: 1.65;
+    }
+    .about p:last-child { margin-bottom: 0; }
+    .about strong { color: var(--ink); font-weight: 600; }
+    .project {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .project:last-child { border-bottom: none; padding-bottom: 0; }
+    .project:first-child { padding-top: 0; }
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .project-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .project-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-faint);
+    }
+    .project-tagline {
+      color: var(--ink-soft);
+      font-size: 16px;
+      margin-bottom: 16px;
+      line-height: 1.55;
+    }
+    .project-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      color: var(--ink-soft);
+    }
+    .project-links { display: flex; gap: 20px; font-size: 14px; }
+    .project-links a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .project-links a:hover { border-bottom-color: var(--accent); }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .skill-group h3 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .skill-group ul {
+      list-style: none;
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.85;
+    }
+    @media (max-width: 600px) {
+      header { padding: 64px 0 48px; }
+      header h1 { font-size: 34px; }
+      header .lede { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div class="name">Elsie David</div>
+      <div class="links">
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="mailto:elsienanbam@gmail.com">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="container">
+      <h1>Data scientist working on experimentation, causal inference, and applied ML.</h1>
+      <p class="lede">
+        I translate ambiguous business questions into rigorous analysis. Recently shipped a 70% YoY lift in lead conversion at Stripe, built a production RAG pipeline for unstructured legal documents, and measured housing intervention effects using synthetic control methods at Berkeley.
+      </p>
+      <div class="meta">
+        <span>Berkeley, CA</span>
+        <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
+        <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="work">
+    <div class="container">
+      <div class="section-label">Selected work</div>
+
+      <div class="project">
+        <div class="project-header">
+          <div class="project-title">Unbarred — RAG over California county legal codes</div>
+          <div class="project-meta">2024 — 2025</div>
+        </div>
+        <p class="project-tagline">
+          A retrieval-augmented question-answering system that grounds plain-English answers in actual county statutes. Compared four retrieval pipelines and three embedding models on section-match metrics; shipped on Supabase pgvector with Claude 3 Opus and a citation-mandatory prompt.
+        </p>
+        <div class="project-tags">
+          <span class="tag">RAG</span>
+          <span class="tag">FAISS</span>
+          <span class="tag">Retrieval Evaluation</span>
+          <span class="tag">Claude / Prompt Design</span>
+          <span class="tag">Supabase pgvector</span>
+        </div>
+        <div class="project-links">
+          <a href="case-studies/unbarred.html">Read case study →</a>
+          <a href="https://github.com/LawNavigator-mims/law-nav-model-api" target="_blank" rel="noopener">Code</a>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <div class="project-title">Habitat for Humanity — measuring renovation impact</div>
+          <div class="project-meta">2025</div>
+        </div>
+        <p class="project-tagline">
+          Three-method causal analysis of $12.25M in home renovations across 34 Philadelphia ZIP codes. Difference-in-differences, neighbor comparison, and synthetic control with placebo testing — all converging on a careful null result, and a recommendation for what to measure instead.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Causal Inference</span>
+          <span class="tag">Diff-in-Diff</span>
+          <span class="tag">Synthetic Control</span>
+          <span class="tag">Placebo Tests</span>
+          <span class="tag">Python · R</span>
+        </div>
+        <div class="project-links">
+          <a href="case-studies/habitat.html">Read case study →</a>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <div class="project-title">Lead scoring &amp; funnel experimentation</div>
+          <div class="project-meta">2026</div>
+        </div>
+        <p class="project-tagline">
+          Methodology recreation on a public marketing funnel dataset, mirroring the analytical pattern that contributed to a 70% YoY lift in lead conversion during my Stripe internship. Feature analysis, signal reweighting, and experiment design for the conversion-vs-quality trade-off.
+        </p>
+        <div class="project-tags">
+          <span class="tag">SQL</span>
+          <span class="tag">Experimentation</span>
+          <span class="tag">Feature Analysis</span>
+          <span class="tag">Lead Scoring</span>
+        </div>
+        <div class="project-links">
+          <a href="case-studies/lead-scoring.html">Read case study →</a>
+          <a href="https://github.com/" target="_blank" rel="noopener">Code</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container">
+      <div class="section-label">About</div>
+      <p>
+        I hold a Master's in Information Management and Systems from <strong>UC Berkeley</strong>, with a focus on data science. Before Berkeley, I spent three years as an enterprise systems administrator in the Nigerian banking sector — Union Bank, then Heritage Bank — where I learned to ship reliable analytical workflows inside heavily regulated environments.
+      </p>
+      <p>
+        In summer 2024 I interned at <strong>Stripe</strong> on a Go-To-Market analytics team, where I refined a lead scoring model and designed experiments to measure conversion-quality trade-offs. Most recently I worked as a Data Governance Analyst at W.I.N Business Solutions, building structured datasets and reporting workflows that reduced manual reconciliation by 25–30%.
+      </p>
+      <p>
+        I gravitate toward problems where the question itself is ambiguous — figuring out what to measure, what the data can and can't tell you, and how to communicate the answer to people who will make decisions with it.
+      </p>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="container">
+      <div class="section-label">Skills</div>
+      <div class="skills-grid">
+        <div class="skill-group">
+          <h3>Languages &amp; Tools</h3>
+          <ul>
+            <li>Python (pandas, scikit-learn, PyTorch)</li>
+            <li>SQL (BigQuery, Postgres)</li>
+            <li>R</li>
+            <li>Tableau</li>
+            <li>Git, dbt</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>Methods</h3>
+          <ul>
+            <li>Experimentation &amp; A/B testing</li>
+            <li>Causal inference (DiD, synthetic control)</li>
+            <li>Predictive modeling</li>
+            <li>Feature analysis</li>
+            <li>Model evaluation</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>ML / LLM</h3>
+          <ul>
+            <li>RAG pipelines</li>
+            <li>Embedding evaluation</li>
+            <li>FAISS / vector search</li>
+            <li>Retrieval metrics</li>
+            <li>Prompt &amp; chunking design</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>Domain</h3>
+          <ul>
+            <li>GTM &amp; lead scoring</li>
+            <li>Data governance</li>
+            <li>Reporting &amp; dashboarding</li>
+            <li>Stakeholder communication</li>
+            <li>Regulated environments</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div>Elsie David — Berkeley, CA</div>
+      <div>
+        <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
+        &nbsp;·&nbsp;
+        <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
