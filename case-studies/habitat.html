@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Habitat for Humanity Philadelphia — Measuring the Impact of Home Renovations · Elsie David</title>
-  <meta name="description" content="Case study: a three-method causal analysis of Habitat for Humanity's renovation program in Philadelphia. The headline finding was a null result — and that's the most interesting part." />
+  <title>Did Repair Investments Move the Needle? A Causal Study of Housing Program Outcomes · Elsie David</title>
+  <meta name="description" content="Case study: testing whether visible improvements translate to measurable home-value gains through causal analysis of a housing renovation program." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -26,9 +26,10 @@
     <div class="container">
       <a class="case-back" href="../index.html">← Back to all work</a>
       <div class="case-eyebrow">Case study · Causal inference</div>
-      <h1>What if the renovations didn't move home values? A null-result case study for Habitat for Humanity.</h1>
+      <h1>Did Repair Investments Move the Needle? A Causal Study of Housing Program Outcomes</h1>
+      <p class="case-subtitle">Testing whether visible improvements translate to measurable home-value gains</p>
       <p class="case-lede">
-        Habitat for Humanity Philadelphia spent $12.25M over fifteen years renovating 942 homes. The question they brought us was simple: did those renovations raise home values? We tried three methods to answer it. None of them found a clear effect. The interesting work was in showing why that finding is robust — and what to do about it.
+        A community housing nonprofit spent $12.25M over fifteen years renovating homes in Philadelphia. We tried three independent methods to answer whether those renovations raised property values. None found a clear effect. The interesting work was in showing why — and what that tells us about the measurement instrument, not just the program.
       </p>
       <div class="case-meta">
         <div class="case-meta-item"><div class="label">Role</div><div class="value">Data scientist (causal analysis)</div></div>
@@ -43,156 +44,143 @@
     <div class="container">
 
       <section>
-        <h2>The question Habitat asked us</h2>
+        <div class="at-a-glance">
+          <div class="at-a-glance-item">
+            <div class="aag-label">Problem</div>
+            <div class="aag-value">Did $12.25M in home renovations raise property values in Philadelphia? The program's wealth-building theory of change depended on it.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">My role</div>
+            <div class="aag-value">Designed and ran the full causal analysis — all three identification strategies, from data assembly through placebo testing and final recommendations.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Methods</div>
+            <div class="aag-value">Difference-in-differences (ZIP and home level), neighbor comparison, synthetic control with placebo tests.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Key takeaway</div>
+            <div class="aag-value">No detectable effect on Zillow home values — but Zillow structurally can't capture interior repairs. The finding is as much about measurement as program impact.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The question we were asked</h2>
         <p>
-          Habitat for Humanity Philadelphia funds renovations on owner-occupied homes — primarily in lower-income neighborhoods of West and North Philadelphia. The theory of change is straightforward: home equity is a major component of generational wealth; renovations improve home value; therefore renovations are a wealth-building intervention.
+          A community housing nonprofit funds renovations on owner-occupied homes in lower-income neighborhoods of West and North Philadelphia. The theory of change: home equity is a major component of generational wealth; renovations improve home value; therefore renovations are a wealth-building intervention.
         </p>
         <p>
-          They wanted to know whether the theory of change was empirically supported. Specifically: <strong>did renovated homes appreciate faster than they would have without the renovation?</strong> The answer matters for funding conversations, donor reporting, and program design.
+          We were asked to evaluate whether that theory was empirically supported — specifically, whether renovated homes appreciated faster than they would have without the renovation. The answer matters for donor reporting, funding conversations, and program design.
         </p>
       </section>
 
       <section>
-        <h2>The data we had to work with</h2>
+        <h2>The data</h2>
         <div class="results-grid">
           <div class="result-card"><div class="number">1,027</div><div class="label">Renovations completed (942 unique homes)</div></div>
           <div class="result-card"><div class="number">34</div><div class="label">Philadelphia ZIP codes</div></div>
           <div class="result-card"><div class="number">$12.25M</div><div class="label">Total renovation spend, 2010–2025</div></div>
           <div class="result-card"><div class="number">$11,929</div><div class="label">Average cost per renovation</div></div>
         </div>
+        <p>Three sources, each with different strengths and weaknesses: program repair records (address-level, with renovation date and cost); Zillow Zestimate (home-level annual estimates, 2016–2025); and the Zillow Home Value Index (ZIP-level, 2000–2025, longer history but coarser geography).</p>
         <p>
-          Three data sources, each with different strengths and weaknesses:
-        </p>
-        <ul>
-          <li><strong>Habitat repair records</strong> (2010–2025) — address-level, with renovation date and cost.</li>
-          <li><strong>Zillow Zestimate</strong> (2016–2025, home-level) — annual home value estimates per property.</li>
-          <li><strong>Zillow Home Value Index (ZHVI)</strong> (2000–2025, ZIP-level) — longer history but at coarser geography.</li>
-        </ul>
-        <p>
-          A structural feature of the data shaped everything that followed: renovations are <strong>concentrated</strong>. ZIPs 19104 and 19121 alone account for nearly half of all renovations, and the top 10 ZIPs (29% of the ZIPs touched) absorbed more than 80% of the funding. This is good for program targeting; it's hard for causal identification, because the treatment is correlated with neighborhood characteristics that also drive home values.
+          A structural feature shaped everything: renovations are <strong>concentrated</strong>. Two ZIP codes alone account for nearly half of all renovations; the top 10 ZIPs absorbed more than 80% of the funding. This is sensible program targeting, but it complicates causal identification — treatment is correlated with neighborhood characteristics that independently drive home values.
         </p>
       </section>
 
       <section>
-        <h2>The identification problem, in one sentence</h2>
+        <h2>The identification challenge</h2>
         <p>
-          Habitat doesn't randomly assign which homes get renovated — they target homes that need help, in neighborhoods where need is concentrated. So a simple "compare renovated to unrenovated" comparison conflates the effect of the renovation with the effect of being the kind of home, in the kind of neighborhood, that Habitat selects. The whole analysis is about handling that confounding without an experiment.
-        </p>
-        <p>
-          We ran three methods, each with different assumptions, each robust to different failure modes. Triangulating between them lets us say something stronger than any single method would support.
+          The organization doesn't randomly assign which homes get renovated — they target homes that need help, in neighborhoods where need is concentrated. A simple "renovated vs. unrenovated" comparison conflates the renovation effect with selection effects. All three methods below are attempts to handle that confounding without a randomized experiment. Triangulating across them lets us make a stronger claim than any single method would support.
         </p>
       </section>
 
       <section>
-        <h2>Approach 1 — Difference-in-differences, at ZIP and home level</h2>
+        <h2>Approach 1 — Difference-in-differences</h2>
         <p>
-          DiD compares the change in outcomes between treated and untreated units, before and after treatment. Its core assumption is <strong>parallel trends</strong>: in the absence of treatment, the treated and control groups would have moved in the same direction.
+          DiD compares how outcomes change between treated and untreated units, before and after treatment. We ran it twice: at the ZIP level (grouping ZIPs by total renovation spending) and at the home level (grouping homes by renovation year).
         </p>
-        <p>
-          We ran DiD twice — once at the ZIP level (grouping ZIPs by total renovation spending into categories: No renovation, Minimal &lt; $60k, Low $60–100k, Medium $100–280k, High &gt; $280k) and once at the home level (grouping homes by the year their renovation was completed).
-        </p>
-
         <h3>What we saw</h3>
         <ul>
-          <li>At the <strong>ZIP level</strong>: ZIPs with the highest renovation investment had the <em>lowest</em> baseline home values — a direct artifact of targeting. Home values rose across all categories, including ZIPs with no renovation, suggesting that broader market trends were dominating any program-specific effect. The pattern persisted when we aligned ZIPs by their first-renovation year (event time = 0) to remove timing confounds.</li>
+          <li>At the <strong>ZIP level</strong>: ZIPs with the highest renovation investment had the lowest baseline home values — a direct artifact of targeting. Home values rose across all spending categories, including ZIPs with zero renovation, suggesting market trends dominated any program effect.</li>
           <li>At the <strong>home level</strong> (122 homes, renovations 2016–2024): pre-renovation trends looked similar across cohorts. Post-renovation, no clear jump. Renovated homes rose with the market, not above it.</li>
-          <li>The event-study estimates produced wide 90% confidence intervals that consistently crossed zero. We couldn't rule out a small effect; we also couldn't claim one.</li>
+          <li>Event-study estimates produced wide 90% confidence intervals consistently crossing zero. We couldn't rule out a small effect; we couldn't claim one.</li>
         </ul>
       </section>
 
       <section>
         <h2>Approach 2 — Neighbor comparison</h2>
         <p>
-          DiD across ZIPs is vulnerable to the "renovated ZIPs are different ZIPs" problem. So we tried a tighter comparison: for each of 120 renovated homes, compare its value trajectory to its <strong>actual neighbors</strong> who did not receive renovations.
+          For each of 120 renovated homes, we compared its value trajectory to its <strong>actual neighbors</strong> who did not receive renovations. Two homes on the same block share most location-driven value movement, so post-renovation divergence should isolate the repair effect.
         </p>
         <p>
-          The assumption is weaker and more credible: two homes on the same block share most location-driven value movement, so any divergence in trajectory after one is renovated and the other isn't should isolate the renovation effect.
-        </p>
-        <p>
-          Pre-renovation, treated and neighbor trajectories tracked closely. Post-renovation, they continued to track closely. The estimated treatment effects had wide confidence bands centered near zero across all post-period years. No clear effect.
+          Pre-renovation, treated and neighbor trajectories tracked closely. Post-renovation, they continued to track closely. Treatment effects had wide confidence bands centered near zero across all post-period years. No clear effect.
         </p>
       </section>
 
       <section>
-        <h2>Approach 3 — Synthetic control at the ZIP level</h2>
+        <h2>Approach 3 — Synthetic control</h2>
         <p>
-          Where DiD requires you to find one good comparison group, synthetic control lets you <strong>construct one</strong>: for each treated ZIP, build a weighted combination of untreated ZIPs that matches the treated ZIP's pre-period home-value trajectory as closely as possible. The post-period gap between the treated ZIP and its synthetic counterpart is the estimated effect.
+          Where DiD requires finding one comparison group, synthetic control <strong>constructs one</strong>: for each treated ZIP, a weighted combination of untreated ZIPs that closely matches the treated ZIP's pre-period trajectory. The post-period gap between the actual ZIP and its synthetic counterpart estimates the effect.
         </p>
         <p>
-          We applied this to 33 treated ZIPs, using a donor pool of 13 untreated Philadelphia ZIPs. For a representative example — ZIP 19129 — the treated trajectory and the synthetic counterpart tracked each other so closely after the renovation event that the gap was indistinguishable from noise.
+          We applied this to 33 treated ZIPs with a donor pool of 13 untreated Philadelphia ZIPs. For a representative example (ZIP 19129), treated and synthetic trajectories tracked so closely post-renovation that the gap was indistinguishable from noise.
         </p>
         <p>
-          The <strong>placebo test</strong> tightened this finding. We re-ran the synthetic-control procedure on ZIPs that <em>never received renovations</em>, then compared the post-period-to-pre-period mean squared prediction error ratio for treated vs. donor ZIPs. Several untreated ZIPs showed larger "effects" than the treated ones. If the renovation truly moved values, we'd expect treated ZIPs to be outliers on this measure. They weren't.
+          The <strong>placebo test</strong> strengthened this finding: re-running the procedure on never-renovated ZIPs, several untreated ZIPs showed larger "effects" than treated ones. If renovation truly moved values, treated ZIPs should be outliers on this measure. They weren't.
         </p>
       </section>
 
       <section>
-        <h2>ROI — putting the null in dollar terms</h2>
-        <p>
-          The point estimate from our preferred specification: renovations were associated with a <strong>$1,670 decrease</strong> in home value, on average — but the 90% confidence interval crossed zero, so the honest read is "no detectable effect."
-        </p>
-        <p>
-          Compared to the cost side, this is unambiguous:
-        </p>
+        <h2>Putting the null in dollar terms</h2>
+        <p>The point estimate from our preferred specification: renovations were associated with a <strong>$1,670 decrease</strong> in home value on average — but the 90% confidence interval crosses zero, so the honest read is "no detectable effect."</p>
         <table>
           <thead>
-            <tr>
-              <th>Metric</th>
-              <th>Value</th>
-            </tr>
+            <tr><th>Metric</th><th>Value</th></tr>
           </thead>
           <tbody>
             <tr><td>Average renovation cost</td><td>$11,929 / home</td></tr>
             <tr><td>Break-even value increase needed</td><td>$11,929</td></tr>
-            <tr><td>10% ROI value increase needed</td><td>$13,120</td></tr>
-            <tr><td>Estimated value increase (point estimate)</td><td>–$1,670 (CI crosses zero)</td></tr>
+            <tr><td>Estimated value change (point estimate)</td><td>–$1,670 (CI crosses zero)</td></tr>
           </tbody>
         </table>
-        <p>
-          The estimated change in home value is well below the break-even point. By the metric Habitat originally cared about, the program is not breaking even.
-        </p>
+        <p>Against the cost side, the finding is clear: using home value as the outcome measure, there is no detectable return on the renovation spend.</p>
       </section>
 
       <section>
-        <h2>What I refused to claim</h2>
-        <p>
-          A confident "the program doesn't work" would have been wrong, and would have done real damage to a program serving real families. What I said instead — repeatedly, in the deliverable — was more careful:
-        </p>
+        <h2>Why the null result is a measurement finding, not just a program finding</h2>
         <div class="callout">
-          <strong>We did not find evidence that renovations raised home values.</strong> That is not the same as finding evidence that they didn't. The data we have can rule out large positive effects; it cannot rule out small ones. And — critically — Zillow's Zestimate is a market-trend estimator. It picks up neighborhood comparables. It is <em>structurally unlikely</em> to pick up interior repairs, mechanical systems, accessibility improvements, or any non-visible work — which is exactly the kind of work Habitat does.
+          <strong>We did not find evidence that renovations raised home values.</strong> That is not the same as finding evidence that they didn't. The data can rule out large positive effects; it cannot rule out small ones. More importantly: Zillow's Zestimate is a market-trend estimator. It picks up neighborhood comparables. It is <em>structurally unlikely</em> to pick up interior repairs, mechanical systems, accessibility improvements, or any non-visible work — which is exactly what this program does.
         </div>
         <p>
-          The right read of the result is: <strong>using home value as a proxy for wealth, with Zillow as the measurement instrument, we don't see the program effect. That tells us as much about the measurement instrument as it does about the program.</strong>
+          The right read: <strong>using home value as a proxy for wealth, with Zillow as the measurement instrument, we don't see the program effect. That tells us as much about the instrument as it does about the program.</strong>
         </p>
       </section>
 
       <section>
-        <h2>What I recommended Habitat do</h2>
+        <h2>Recommendations</h2>
         <ul>
-          <li><strong>Expand the outcome metrics beyond home value.</strong> Resident-reported safety, satisfaction, health, and housing stability are likely where the program effects actually show up. They require survey instrumentation Habitat doesn't yet have.</li>
-          <li><strong>Improve the measurement instrument.</strong> Independent appraisals, ideally with pre/post pairs, would catch the interior improvements that Zestimate misses.</li>
-          <li><strong>Strengthen the repair records.</strong> Recording repair <em>type</em> (roof vs. plumbing vs. accessibility) and pre/post home condition would enable subgroup analyses where average effects mask heterogeneous ones.</li>
-          <li><strong>Be careful with the wealth-creation framing.</strong> If the goal is wealth-building, home equity may not be the right channel for Habitat's portfolio of work. If the goal is housing stability and quality of life, the program likely works — but Habitat will need new instruments to demonstrate it.</li>
+          <li><strong>Expand outcome metrics beyond home value.</strong> Resident-reported safety, satisfaction, health, and housing stability are likely where program effects actually show up — but require survey instrumentation the organization doesn't currently have.</li>
+          <li><strong>Improve the measurement instrument.</strong> Independent appraisals with pre/post pairs would capture interior improvements that Zestimate misses.</li>
+          <li><strong>Record repair type in program data.</strong> Tracking what was repaired (roof vs. plumbing vs. accessibility) would enable subgroup analyses — average effects may mask heterogeneous ones.</li>
+          <li><strong>Revisit the wealth-creation framing.</strong> If the goal is wealth-building, home equity may not be the right channel for this type of work. If the goal is housing stability and quality of life, the program likely works — but needs different instruments to demonstrate it.</li>
         </ul>
       </section>
 
       <section>
         <h2>What this project taught me</h2>
         <p>
-          <strong>A null result, communicated carefully, is more useful than a positive result communicated carelessly.</strong> The temptation in client-facing analytics is to find a number and report it. The discipline is to find a number, report the range of values consistent with it, and report what assumptions you needed to make for the number to be meaningful. Stakeholders making real decisions can handle "we estimate X but only under these conditions" — they're poorly served by a single headline that loses its caveats the moment it's quoted out of context.
+          <strong>A null result, communicated carefully, is more useful than a positive result communicated carelessly.</strong> The discipline is to report a number alongside the range of values consistent with it — and to name the assumptions that had to hold for the number to be meaningful. "We estimate X but only under these conditions" serves stakeholders better than a single headline that loses its caveats the moment it's quoted.
         </p>
         <p>
-          <strong>Identification is mostly a data-collection problem.</strong> The methods — DiD, synthetic control — are well-documented and runnable in a weekend. The hard part is having longitudinal data, a clean donor pool, an outcome variable that actually captures what you care about, and pre-period coverage long enough to test parallel trends. Most of the effort in this project went into data assembly, not modeling.
-        </p>
-        <p>
-          <strong>Visualization is the deliverable.</strong> A parallel-trends plot or a synthetic-control trajectory communicates trust (or distrust) in an estimate more honestly than a p-value ever does. The Habitat team understood the result faster from the trajectory charts than from any table of coefficients.
+          <strong>Identification is mostly a data-collection problem.</strong> The methods — DiD, synthetic control — are well-documented. The hard part is longitudinal data, a clean donor pool, a pre-period long enough to test parallel trends, and an outcome variable that actually captures what you care about. Most of the effort here went into data assembly and outcome validity, not modeling.
         </p>
       </section>
 
       <section>
         <h2>Credits</h2>
         <p>
-          Conducted as part of the UC Berkeley Public Policy Lab, in partnership with Habitat for Humanity Philadelphia. Final deliverable presented to the Habitat team in April 2025.
+          Conducted as part of the UC Berkeley Public Policy Lab, in partnership with a Philadelphia-based community housing nonprofit. Final deliverable presented in April 2025.
         </p>
       </section>
 

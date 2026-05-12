@@ -28,7 +28,7 @@
       <div class="case-eyebrow">Case study · Applied ML / Retrieval</div>
       <h1>Unbarred: a RAG system that answers questions about local law without giving legal advice</h1>
       <p class="case-lede">
-        Most Americans can't find the laws that govern their daily lives. We built a retrieval-augmented question-answering system over California county ordinances — and spent most of our time on the unglamorous problem of how to know whether the retrieval was actually working.
+        Most Americans can't find the laws that govern their daily lives. We built a retrieval-augmented question-answering system over California county ordinances — and spent most of our time on the unglamorous problem of knowing whether retrieval was actually working.
       </p>
       <div class="case-meta">
         <div class="case-meta-item"><div class="label">Role</div><div class="value">Data scientist (5-person team)</div></div>
@@ -43,71 +43,87 @@
     <div class="container">
 
       <section>
-        <h2>The problem</h2>
-        <p>
-          "The law is public" is more aspiration than reality. County and municipal codes — the laws that actually govern housing, zoning, business permits, noise, protest — sit in non-searchable PDFs scattered across thousands of separate government websites. Each county has its own structure, its own numbering conventions, its own quirks of formatting. Commercial legal databases like Westlaw exist, but they're priced for lawyers, not for the small-business owner trying to read a home-occupancy ordinance.
-        </p>
-        <p>
-          The naive solution is to ask ChatGPT. The problem with that solution is that ChatGPT will produce a confident, jurisdiction-agnostic answer that may or may not reflect the actual statute. <strong>Unbarred</strong> is our attempt at the next-best thing: a retrieval-augmented system that answers in plain English but grounds every response in the actual local statute text, with citations users can verify.
-        </p>
-        <div class="callout">
-          <strong>The thing I'd most want a hiring manager to take from this project:</strong> the system itself is a few hundred lines of well-understood machinery. The interesting work was in deciding how to <em>evaluate</em> whether the retrieval was working, and in building the discipline of measurement before iteration.
+        <div class="at-a-glance">
+          <div class="at-a-glance-item">
+            <div class="aag-label">Problem</div>
+            <div class="aag-value">County ordinances live in non-searchable PDFs. LLMs without grounding produce confident but unreliable legal answers.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">My role</div>
+            <div class="aag-value">Led retrieval pipeline design, evaluation methodology, and document parsing strategy on a 5-person team.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Methods</div>
+            <div class="aag-value">FAISS + Supabase pgvector; six retrieval configurations benchmarked on section-match metrics; blind LLM comparison (Claude 3 Opus vs. GPT-4).</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Key takeaway</div>
+            <div class="aag-value">Jurisdiction pre-filtering — not model selection — was the single highest-leverage improvement to retrieval quality.</div>
+          </div>
         </div>
       </section>
 
       <section>
-        <h2>The pipeline, in one paragraph</h2>
+        <h2>The problem</h2>
         <p>
-          County ordinance PDFs come in, get parsed and chunked along section boundaries, get embedded into a dense vector index (FAISS during experimentation, Supabase's pgvector in production), and at query time get retrieved by semantic similarity, filtered to the user's county, and passed into Claude 3 Opus with a prompt that constrains generation to the retrieved text and forces citation of source sections. The UI is a chat surface with a per-county filter, source-section citations, a CSV export of the retrieved chunks, and a persistent disclaimer that the tool is not legal advice.
+          County and municipal codes — the laws that govern housing, zoning, permits, noise, protest — sit in non-searchable PDFs scattered across thousands of separate government websites. Commercial databases like Westlaw exist, but they're priced for lawyers, not the small-business owner trying to read a home-occupancy ordinance.
         </p>
         <p>
-          Each of those stages had design decisions that materially affected output quality. The sections below describe the three that mattered most: parsing, retrieval, and evaluation.
+          Asking a general-purpose LLM produces confident, jurisdiction-agnostic answers that may or may not reflect the actual statute. <strong>Unbarred</strong> is the alternative: a retrieval-augmented system that answers in plain English but grounds every response in the actual local statute text, with citations users can verify.
         </p>
+        <div class="callout">
+          <strong>The thing I'd most want a hiring manager to take from this project:</strong> the system itself is a few hundred lines of well-understood machinery. The interesting work was deciding how to <em>evaluate</em> whether retrieval was working, and building the discipline of measurement before iteration.
+        </div>
+      </section>
+
+      <section>
+        <h2>The pipeline</h2>
+        <p>The system follows a standard RAG structure with a few important design decisions at each stage:</p>
+        <ul>
+          <li><strong>Ingest:</strong> county ordinance PDFs parsed and chunked along section boundaries (300–500 tokens), preserving hierarchical metadata (Title, Chapter, Section, county).</li>
+          <li><strong>Index:</strong> FAISS during experimentation; Supabase pgvector in production.</li>
+          <li><strong>Retrieve:</strong> semantic similarity search, filtered to the user's county <em>before</em> ranking, then reranked by cosine threshold.</li>
+          <li><strong>Generate:</strong> Claude 3 Opus with a citation-mandatory prompt constrained to retrieved text only.</li>
+          <li><strong>UI:</strong> chat surface with per-county filter, source citations, CSV export, and a persistent disclaimer that the tool is not legal advice.</li>
+        </ul>
       </section>
 
       <section>
         <h2>Parsing: when the documents fight you</h2>
         <p>
-          County codes are not written for machines. Within a single PDF, headers shift, section numbering changes conventions, footers interrupt content flow. Across counties it gets worse — some use a Title → Chapter → Section hierarchy, others insert additional levels (Articles, Divisions, Parts) at irregular depths.
+          County codes are not written for machines. Headers shift mid-PDF, section numbering changes conventions, footers interrupt content. Across counties it gets worse — some use Title → Chapter → Section; others insert Articles, Divisions, or Parts at irregular depths.
         </p>
         <p>
-          We needed a chunking strategy that preserved <strong>legal hierarchy as metadata</strong>, not one that treated the documents as undifferentiated text. The reason: a user's question about "§ 1.12.010" should retrieve the right section, and a downstream answer should be able to cite "Title 1, Chapter 12, Section 010" specifically, not just a paragraph of text.
+          We needed chunking that preserved <strong>legal hierarchy as metadata</strong>, not undifferentiated text. A user asking about "§ 1.12.010" needs to retrieve that section; the answer needs to cite "Title 1, Chapter 12, Section 010" — not a nearby paragraph that happens to mention it.
         </p>
         <p>
-          The approach: for each county, we used a LLaMA-based LLM to inspect a sample of pages and propose regex patterns matching that county's section headers and footers. We then validated and tuned those patterns manually before running them at scale. Output: a structured CSV per county where each row is a section, columns carry hierarchical metadata (Title, Chapter, Section, county, state), and the full text is preserved at chunk sizes of 300–500 tokens — large enough to keep a section coherent, small enough to embed efficiently.
+          Approach: for each county, a LLaMA-based LLM inspected a sample of pages and proposed regex patterns for that county's headers and footers. We validated and tuned those patterns manually before running at scale. Output: a structured CSV per county where each row is one legal section with hierarchical metadata columns and full text at 300–500 tokens.
         </p>
         <div class="callout">
-          The unglamorous lesson here: a few hours of LLM-assisted pattern generation, validated and manually corrected, beats either pure manual parsing or pure LLM extraction at scale. The LLM is good at proposing structure; humans are good at noticing when it's wrong.
+          LLM-assisted pattern generation, validated manually, beats either pure manual parsing or pure LLM extraction. The LLM proposes structure well; humans catch when it's wrong.
         </div>
       </section>
 
       <section>
-        <h2>Retrieval: comparing four pipelines</h2>
-        <p>
-          We tested four retrieval approaches end-to-end and benchmarked them on a held-out evaluation set:
-        </p>
+        <h2>Retrieval: comparing six approaches</h2>
+        <p>We tested six retrieval configurations end-to-end against a held-out evaluation set:</p>
         <ul>
-          <li><strong>BM25</strong> — classic lexical retrieval, our baseline.</li>
+          <li><strong>BM25</strong> — lexical retrieval; baseline.</li>
           <li><strong>FAISS with <code>all-MiniLM-L6-v2</code></strong> (384 dimensions).</li>
           <li><strong>FAISS with <code>sentence-transformers/mpnet-base-v2</code></strong>.</li>
-          <li><strong>FAISS with <code>BAAI/bge-small-en-v1.5</code></strong> (758 dimensions).</li>
-          <li><strong>FAISS with a hybrid reranker</strong> (MPNet + RoBERTa-style rerank).</li>
-          <li><strong>ColBERT</strong> — abandoned. Failed to retrieve usable results in our setup.</li>
+          <li><strong>FAISS with <code>BAAI/bge-small-en-v1.5</code></strong>.</li>
+          <li><strong>FAISS with a hybrid reranker</strong> (MPNet embeddings + RoBERTa-style rerank).</li>
+          <li><strong>ColBERT</strong> — abandoned; failed to retrieve usable results in our setup.</li>
         </ul>
-        <p>
-          Two families of metrics, because they measure different things:
-        </p>
+        <p>We tracked two families of metrics:</p>
         <ul>
-          <li><strong>Cosine-similarity metrics</strong> — Precision@10, Recall@10, MRR, nDCG@10. These tell you whether the retrieved chunks are <em>semantically close</em> to the ground-truth answer.</li>
-          <li><strong>Section-match metrics</strong> — Section_Precision@10, Section_Recall@10, Section_Hit@3, Section_Exact_Match. These tell you whether the retrieved chunks come from the <em>right legal section</em>. For a legal QA system, this is the metric that actually matters: if the answer cites the wrong statute, semantic closeness doesn't save you.</li>
+          <li><strong>Cosine-similarity metrics</strong> (Precision@10, Recall@10, MRR, nDCG@10) — measures whether retrieved chunks are semantically close to the ground-truth answer.</li>
+          <li><strong>Section-match metrics</strong> (Section_Precision@10, Section_Recall@10, Section_Hit@3, Section_Exact_Match) — measures whether retrieved chunks come from the <em>right legal section</em>. For a legal QA system, this is what actually matters: semantic closeness doesn't save you if you're citing the wrong statute.</li>
         </ul>
 
         <h3>What the evaluation showed</h3>
         <p>
-          The <code>bge-small</code> model had the highest Section_Hit@3 and Section_Recall@10 — the metrics that matter most for legal precision. But its 758-dimensional embeddings were incompatible with Supabase's hosted vector store, which at the time only supported its native lower-dimensional model at runtime. So we made an explicit trade-off: ship <code>all-MiniLM-L6-v2</code> (384 dim) in production, accept a modest drop in retrieval accuracy, gain dramatic operational simplicity and lower memory/cost.
-        </p>
-        <p>
-          The final pipeline does FAISS retrieval on MiniLM embeddings, filters to the user's selected county <em>before</em> ranking, then reranks the candidate set by a cosine similarity threshold to lift the most relevant chunks without sacrificing recall.
+          The <code>bge-small</code> model scored highest on Section_Hit@3 and Section_Recall@10 — the metrics that matter most for legal precision. However, it was operationally incompatible with the production Supabase pgvector setup at the time. We made an explicit trade-off: ship <code>all-MiniLM-L6-v2</code> in production, accept a modest drop in retrieval accuracy, gain operational simplicity and lower cost.
         </p>
         <div class="callout">
           <strong>The largest precision win didn't come from the model.</strong> It came from filtering candidates by jurisdiction <em>before</em> embedding-based ranking. In a corpus where the same words mean different things in different counties, that single architectural decision did more for retrieval quality than any model swap.
@@ -115,43 +131,55 @@
       </section>
 
       <section>
-        <h2>Generation: choosing the model, then constraining it</h2>
+        <h2>Generation: model choice and constraints</h2>
         <p>
-          We compared Claude 3 Opus and GPT-4 head-to-head on a set of test queries, running a <strong>blind human evaluation</strong> — users picked the response they found more accurate, helpful, and readable without knowing which model produced which output. Claude won on majority preference, with reviewers noting fewer hallucinations and clearer citation structure.
+          We compared Claude 3 Opus and GPT-4 via a <strong>blind human evaluation</strong>: reviewers chose the more accurate, helpful, and readable response without knowing which model produced it. Claude won on majority preference, with reviewers noting fewer hallucinations and clearer citation structure.
         </p>
-        <p>
-          More important than the model choice was the prompt design. The generation prompt has three jobs:
-        </p>
+        <p>The generation prompt has three jobs:</p>
         <ul>
-          <li><strong>Constrain answers to the retrieved chunks only.</strong> No drawing on training data, no speculation, no interpretive language.</li>
-          <li><strong>Handle out-of-scope queries cleanly</strong> — queries without a jurisdiction, queries asking for legal outcomes ("can I sue?"), queries that require subjective judgment.</li>
-          <li><strong>Enforce a consistent output format</strong> — a factual summary, then mandatory citations to the specific Title, Chapter, and Section.</li>
+          <li><strong>Constrain answers to retrieved chunks only.</strong> No training data, no speculation, no interpretive language.</li>
+          <li><strong>Handle out-of-scope queries cleanly</strong> — no jurisdiction set, requests for legal outcomes, questions requiring subjective judgment.</li>
+          <li><strong>Enforce a consistent output format</strong> — factual summary, then mandatory citations to the specific Title, Chapter, and Section.</li>
         </ul>
-        <p>
-          The phrase that mattered most in the prompt, from many iterations: <em>"do not interpret, do not advise; summarize and cite."</em>
-        </p>
+        <p>The phrase that mattered most across many prompt iterations: <em>"do not interpret, do not advise; summarize and cite."</em></p>
       </section>
 
       <section>
-        <h2>What I'd do differently with another month</h2>
+        <h2>Key technical decisions</h2>
+        <table>
+          <thead>
+            <tr><th>Decision</th><th>Choice</th><th>Tradeoff accepted</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Jurisdiction pre-filtering</td><td>Filter before ranking</td><td>Limits cross-county queries; large precision gain</td></tr>
+            <tr><td>Production embedding model</td><td>MiniLM-L6-v2</td><td>Lower retrieval accuracy vs. bge-small; operational simplicity</td></tr>
+            <tr><td>Chunking unit</td><td>Legal section (300–500 tokens)</td><td>Larger than optimal for some embeddings; preserves citation integrity</td></tr>
+            <tr><td>LLM</td><td>Claude 3 Opus</td><td>Higher cost; preferred on citation accuracy and hallucination rate</td></tr>
+            <tr><td>Generation constraint</td><td>Retrieved text only</td><td>Less fluent answers on edge cases; legally safer</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>What I'd do differently</h2>
         <ul>
-          <li><strong>Hybrid retrieval.</strong> Adding BM25 in parallel with the dense retriever would catch queries that contain exact statute numbers (e.g. "§ 1.12.010") which dense embeddings sometimes miss.</li>
-          <li><strong>Cross-encoder reranking.</strong> A reranking pass with a cross-encoder over the top-20 candidates would likely improve Section_Hit@3 further at modest latency cost.</li>
-          <li><strong>Structured query parsing.</strong> A small LLM call to extract <em>jurisdiction</em> and <em>question type</em> from the raw query, before retrieval, would make the metadata filter more reliable than depending on a UI dropdown the user has to remember to set.</li>
-          <li><strong>Coverage.</strong> The prototype handles a handful of California counties. Scaling the parsing pipeline to handle the long tail of US county formats is mostly an engineering and curation problem, but it's the gating step for any real impact.</li>
+          <li><strong>Hybrid retrieval.</strong> Adding BM25 in parallel with the dense retriever would catch exact statute-number queries (e.g. "§ 1.12.010") that dense embeddings sometimes miss.</li>
+          <li><strong>Cross-encoder reranking.</strong> A cross-encoder pass over the top-20 candidates would likely improve Section_Hit@3 further at modest latency cost.</li>
+          <li><strong>Structured query parsing.</strong> A small LLM call to extract <em>jurisdiction</em> and <em>question type</em> from the raw query — before retrieval — would make the county filter more reliable than a UI dropdown users have to remember to set.</li>
+          <li><strong>Coverage.</strong> The prototype handles a handful of California counties. Scaling to the long tail of US county formats is mostly an engineering and curation problem, but it gates any real-world impact.</li>
         </ul>
       </section>
 
       <section>
         <h2>What this project gave me</h2>
         <p>
-          <strong>Retrieval quality is mostly a data problem, not a model problem.</strong> The headline-grabbing parts of an LLM system — the model, the prompts — turned out to matter less than the unglamorous work of parsing PDFs without losing structure, building a held-out evaluation set with section-level ground truth, and picking the right metadata schema for filtering.
+          <strong>Retrieval quality is mostly a data problem, not a model problem.</strong> The headline-grabbing parts of an LLM system — the model, the prompts — mattered less than parsing PDFs without losing structure, building a held-out evaluation set with section-level ground truth, and picking the right metadata schema for filtering.
         </p>
         <p>
-          <strong>Evaluation discipline transfers.</strong> The instincts that make a good A/B test or a defensible causal study — define your outcome precisely, build a clean comparison, measure what matters not what's easy — apply directly to RAG evaluation. The vocabulary is different; the discipline is the same. This is the part I most want to bring into a new role.
+          <strong>Evaluation discipline transfers.</strong> The instincts that make a good A/B test or causal study — define your outcome precisely, build a clean comparison, measure what matters not what's easy — apply directly to RAG evaluation. The vocabulary is different; the discipline is the same.
         </p>
         <p>
-          <strong>Public-interest ML has its own constraints.</strong> The hardest call in this project wasn't technical: it was where to draw the line between making legal information accessible and inadvertently giving legal advice. We landed on aggressive constraints — disclaimers, citation requirements, refusal to interpret — and accepted that the system would be less satisfying to use as a result. In civic technology, precision is not just a technical concern.
+          <strong>Public-interest ML has its own constraints.</strong> The hardest call wasn't technical: it was where to draw the line between making legal information accessible and inadvertently giving legal advice. We accepted that aggressive constraints — disclaimers, citation requirements, refusal to interpret — made the system less satisfying to use. In civic technology, precision is not just a technical concern.
         </p>
       </section>
 

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lead Scoring &amp; the Conversion-Quality Trade-off · Elsie David</title>
-  <meta name="description" content="Case study: diagnosing a lead scoring model, simulating proposed changes retrospectively, and communicating a trade-off where most stakeholders wanted a single answer." />
+  <title>Evaluating a B2B Lead Scoring Model: Quality vs. Quantity in Practice · Elsie David</title>
+  <meta name="description" content="Case study: using retrospective analysis to assess the volume-quality trade-off in a predictive lead scoring model." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -26,15 +26,16 @@
     <div class="container">
       <a class="case-back" href="../index.html">← Back to all work</a>
       <div class="case-eyebrow">Case study · Analytics &amp; experimentation</div>
-      <h1>When the lead scoring model becomes a liability: a diagnostic, a simulation, and a hard conversation about trade-offs</h1>
+      <h1>Evaluating a B2B Lead Scoring Model: Quality vs. Quantity in Practice</h1>
+      <p class="case-subtitle">Using retrospective analysis to assess the volume-quality trade-off</p>
       <p class="case-lede">
-        A five-year-old B2B lead scoring model was producing high MQL volume and low conversion. The sales team suspected the model was qualifying too many low-quality leads. The question I was asked was: <em>if we change it, what happens — and how do we know before we break it?</em>
+        A five-year-old B2B lead scoring model was producing high MQL volume and low conversion. The sales team suspected the model was qualifying too many low-quality leads. The question: <em>if we change it, what happens — and how do we know before we break it?</em>
       </p>
       <div class="case-meta">
         <div class="case-meta-item"><div class="label">Role</div><div class="value">Data Analyst Intern, GTM Analytics</div></div>
         <div class="case-meta-item"><div class="label">Duration</div><div class="value">Summer 2024</div></div>
         <div class="case-meta-item"><div class="label">Stack</div><div class="value">SQL · Python · pandas · Tableau</div></div>
-        <div class="case-meta-item"><div class="label">Context</div><div class="value">Stripe internship — methodology abstracted</div></div>
+        <div class="case-meta-item"><div class="label">Context</div><div class="value">B2B fintech internship — methodology abstracted</div></div>
       </div>
     </div>
   </div>
@@ -43,95 +44,103 @@
     <div class="container">
 
       <section>
-        <h2>The problem, as it was handed to me</h2>
+        <div class="at-a-glance">
+          <div class="at-a-glance-item">
+            <div class="aag-label">Business question</div>
+            <div class="aag-value">A five-year-old lead scoring model was generating high MQL volume with low downstream conversion. Would raising the bar help — and by how much would it hurt pipeline?</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">My role</div>
+            <div class="aag-value">Sole analyst. Reconstructed the model from secondary data, built and ran the retrospective simulation, and presented the trade-off to GTM stakeholders.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Methods</div>
+            <div class="aag-value">Model reconstruction from multi-touch attribution data; retrospective simulation over 90-day lead cohorts; per-region breakdown of pipeline impact.</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Key takeaway</div>
+            <div class="aag-value">Dropping MQL volume preserved &gt;99.5% of marketing-generated pipeline value — reframing "volume loss" as load reduction with minimal revenue exposure.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The problem</h2>
         <p>
-          The lead scoring model — built years earlier, a point-based system over behavioral and demographic signals — was generating thousands of Marketing Qualified Leads per month at a Marketing-Qualified-to-Sales-Qualified conversion rate consistently below the tech industry benchmark. The hypothesis from the business team: the model was awarding points too generously, so the bar for becoming an MQL was effectively too low, so sales reps were drowning in leads they had no realistic way to prioritize.
+          A point-based lead scoring model, built years earlier over behavioral and demographic signals, was generating MQLs at a Marketing-Qualified-to-Sales-Qualified conversion rate consistently below the industry benchmark. The hypothesis: the model was awarding points too generously, so the bar for becoming an MQL was too low, and sales reps were drowning in leads they had no way to prioritize.
         </p>
         <p>
-          They wanted a set of scoring changes implemented. My job was to determine whether those changes would actually help — before applying them globally and discovering the answer the expensive way.
+          The GTM team wanted specific scoring changes implemented. My job was to determine whether those changes would help — before applying them globally and discovering the answer the expensive way.
         </p>
         <div class="callout">
-          <strong>The shape of the question matters.</strong> "Will this change the conversion rate?" is the wrong question because it has a guaranteed-positive answer (raising the bar always raises conversion rate among those who clear it). The right question is the trade-off: <em>does the gain in conversion rate exceed the loss in absolute pipeline value, and where in the distribution does the loss come from?</em>
+          <strong>The shape of the question matters.</strong> "Will this raise the conversion rate?" is the wrong question — raising the bar always raises the rate among those who clear it. The right question is the trade-off: <em>does the gain in conversion rate exceed the loss in absolute pipeline value, and where in the distribution does the loss come from?</em>
         </div>
       </section>
 
       <section>
         <h2>The data problem hiding inside the modeling problem</h2>
         <p>
-          The first surprise of the project — and the one that shaped everything else — was that <strong>there was no source-of-truth dataset for the lead scoring model itself</strong>. The marketing automation platform that ran the scoring logic only retained activity-level data for a fixed window, and historical exports were inconsistent. There was no table I could query that said "lead X had score Y on date Z and reached the MQL threshold because of touchpoint W."
+          The first surprise: <strong>there was no source-of-truth dataset for the lead scoring model itself</strong>. The marketing automation platform only retained activity-level data for a fixed window, and historical exports were inconsistent. There was no table that said "lead X had score Y on date Z because of touchpoint W."
         </p>
-        <p>
-          So before I could analyze the model, I had to <strong>reconstruct it</strong>. The plan:
-        </p>
+        <p>So before I could analyze the model, I had to <strong>reconstruct it</strong>:</p>
         <ul>
-          <li>Pull every touchpoint each lead had interacted with from the multi-touch attribution data.</li>
-          <li>Pull the lead's demographic profile (segment, region, role) from the contact tables.</li>
-          <li>Apply the documented scoring rules — point values per touchpoint type, demographic bumps, regional adjustments — to recreate, for each lead who reached MQL status, the chain of touchpoints that got them there.</li>
-          <li>Validate the reconstruction by checking that the reconstructed score at the MQL date matched what the model assigned, within tolerance.</li>
+          <li>Pull every touchpoint from the multi-touch attribution data.</li>
+          <li>Pull each lead's demographic profile (segment, region, role) from contact tables.</li>
+          <li>Apply the documented scoring rules to recreate, for each MQL, the chain of touchpoints that got them there.</li>
+          <li>Validate the reconstruction by checking that reconstructed scores matched model-assigned scores within tolerance.</li>
         </ul>
         <p>
-          This reconstruction was not perfect. There were rules I couldn't fully replicate (score recycling on rejection, time-based decay, edge cases in demographic mapping). The reconstruction was a <em>close approximation</em>, accurate enough to support trend-level analysis but not exact to the point. That limitation, named explicitly upfront, shaped what I could and could not claim later.
+          The reconstruction was a <em>close approximation</em> — there were rules I couldn't fully replicate (score recycling, time-based decay, edge cases in demographic mapping). That limitation was named explicitly upfront, and it shaped the claims I could and couldn't make.
         </p>
         <div class="callout">
-          The most useful thing I learned this summer: <strong>lead scoring is a measurement problem before it's a modeling problem.</strong> If you can't reliably observe what your model did and why, you can't improve it — you can only swap it for a different model you also can't observe. The first deliverable wasn't a recommendation; it was a reproducible measurement of how the current model was behaving.
-        </p>
+          <strong>Lead scoring is a measurement problem before it's a modeling problem.</strong> If you can't reliably observe what your model did and why, you can't improve it — you can only swap it for a different model you also can't observe. The first deliverable wasn't a recommendation; it was a reproducible measurement of how the current model was behaving.
+        </div>
       </section>
 
       <section>
         <h2>Diagnosing the current state</h2>
-        <p>
-          Before testing any proposed change, I built a diagnostic picture of how the existing model was performing. Three diagnostics mattered most:
-        </p>
+        <p>Three diagnostics defined the problem clearly:</p>
 
         <h3>1. Where the leads end up</h3>
         <p>
-          For every non-CSF MQL routed to sales, I tracked the engagement-status outcome — Attempting, Open, Rejected, Contacted, Meeting Set, Opportunity Created. The picture was unambiguous: the vast majority of MQLs sat in states that indicate either no engagement or active rejection. Only a small minority showed any signal of real interest in the product. This was the strongest evidence that the model was qualifying volume, not quality.
+          For every MQL routed to sales, I tracked the engagement-status outcome — Attempting, Open, Rejected, Contacted, Meeting Set, Opportunity Created. The vast majority sat in states indicating no engagement or active rejection. A small minority showed any real interest signal. This was the strongest evidence that the model was qualifying volume, not quality.
         </p>
 
         <h3>2. Why the leads get rejected</h3>
         <p>
-          Among rejected leads, I categorized rejection reasons. Two patterns dominated: <em>unresponsive</em> (which could indicate either a bad lead or a bad outreach pattern — confound to flag) and <em>not a fit</em> (lead is an existing customer, requested product unavailable, etc.). The second category is the model's failure directly: those leads shouldn't have crossed the MQL threshold in the first place.
+          Among rejected leads, two rejection reasons dominated: <em>unresponsive</em> (which could indicate a bad lead or a bad outreach pattern — a confound worth flagging) and <em>not a fit</em> (existing customer, product unavailable). The second category is the model's direct failure: those leads shouldn't have crossed the MQL threshold.
         </p>
 
-        <h3>3. Which touchpoints disproportionately drive low-quality MQLs</h3>
+        <h3>3. Which touchpoints drive low-quality MQLs</h3>
         <p>
-          For each touchpoint type — webinars, first-party events, third-party events, content downloads — I measured: (a) what fraction of MQLs had that touchpoint as a contributing signal, and (b) what fraction of those MQLs converted downstream. Some touchpoint types produced large volumes of MQLs with disproportionately low downstream conversion. Those were the model's leakiest gates.
+          For each touchpoint type — webinars, first-party events, third-party events, content downloads — I measured: (a) what fraction of MQLs included that touchpoint, and (b) what fraction of those MQLs converted downstream. Some touchpoint types produced high MQL volumes with disproportionately low downstream conversion. Those were the model's leakiest gates.
         </p>
       </section>
 
       <section>
         <h2>The retrospective simulation</h2>
         <p>
-          The business team had proposed specific scoring changes: differentiating point values for touchpoint sub-types that the current model treated identically, reducing scores for the leakiest touchpoints, and aligning some regional differences that had accumulated through years of one-off tweaks.
+          The proposed changes: differentiate point values for touchpoint sub-types the current model treated identically, reduce scores for the leakiest touchpoints, and align regional inconsistencies that had accumulated through years of one-off tweaks.
         </p>
-        <p>
-          To estimate the impact of these changes <em>without</em> rolling them out, I ran a <strong>retrospective simulation</strong>:
-        </p>
+        <p>To estimate the impact without rolling out the changes, I ran a <strong>retrospective simulation</strong>:</p>
         <ul>
-          <li>For each lead that reached MQL status under the current model, walk back through their touchpoints in the 90 days prior.</li>
-          <li>Recompute the score they would have had at the same date under the proposed scoring rules.</li>
+          <li>For each lead that reached MQL status, walk back through their touchpoints in the 90 days prior.</li>
+          <li>Recompute the score they would have received under the proposed rules.</li>
           <li>Check whether the recomputed score would still have crossed the MQL threshold.</li>
-          <li>For leads that would still have qualified, propagate their actual downstream outcomes — Sales-Qualified Opportunity within 30 days, pipeline value associated with those SQOs.</li>
-          <li>Aggregate: total MQL volume under proposed model, SQO conversion under proposed model, pipeline value under proposed model — all on the same cohort, eliminating most period-to-period confounds.</li>
+          <li>For leads that still qualify, propagate their actual downstream outcomes — pipeline value, SQO conversion.</li>
+          <li>Aggregate: total MQL volume, SQO conversion, and pipeline value under both models on the same cohort.</li>
         </ul>
-
-        <h3>What the simulation does and does not tell you</h3>
-        <p>
-          This methodology is honest about one big limitation: it cannot tell you whether the sales team would <em>convert more efficiently</em> on the smaller, higher-quality MQL cohort. The simulation can show that the proposed model retains most of the high-value opportunities and drops mostly low-value or no-conversion leads, but the second-order behavioral effect — fewer leads, better attention, higher conversion rate per lead — is unmeasurable from historical data. That has to be tested in a pilot.
-        </p>
         <div class="callout">
-          Retrospective simulation lets you bound the <em>structural</em> impact of a model change. It cannot capture the <em>behavioral</em> impact. Saying that out loud upfront prevents the pilot recommendation from looking like an afterthought.
+          Retrospective simulation bounds the <em>structural</em> impact of a model change. It cannot capture the <em>behavioral</em> impact — whether sales reps will convert more efficiently on a smaller, higher-quality lead set. That requires a pilot. Saying this upfront prevents the pilot recommendation from looking like an afterthought.
         </div>
       </section>
 
       <section>
-        <h2>The headline trade-off, and why it's the wrong number to lead with</h2>
+        <h2>The headline trade-off</h2>
         <p>
-          The simulation produced what looked like a damning headline: under the proposed model, total MQL volume drops, downstream SQO count drops substantially, and pipeline value drops. If you stopped reading there, the proposal looks bad for the business.
+          The simulation produced a result that looks alarming in isolation: under the proposed model, MQL volume drops substantially, SQO count drops, and pipeline value drops. If you stopped there, the proposal looks bad.
         </p>
-        <p>
-          But the right comparison was not <em>MQL volume drops by X%</em>. The right comparison was:
-        </p>
+        <p>But the right comparison:</p>
         <table>
           <thead>
             <tr><th>Comparison</th><th>Direction</th></tr>
@@ -140,44 +149,41 @@
             <tr><td>MQL volume change</td><td>Substantial decrease</td></tr>
             <tr><td>30-day SQO count change</td><td>Decrease, smaller than MQL decrease</td></tr>
             <tr><td>Pipeline value change</td><td>Decrease, smaller still</td></tr>
-            <tr><td>Pipeline value change as a fraction of total marketing-generated pipeline</td><td>&lt;0.5% — a rounding error</td></tr>
+            <tr><td>Pipeline value as fraction of total marketing-generated pipeline</td><td>&lt;0.5% — a rounding error</td></tr>
           </tbody>
         </table>
         <p>
-          The pattern is the point. <strong>The model change drops volume disproportionately at the low-value end of the distribution.</strong> The high-value opportunities are mostly preserved. So the "loss" measured against the full business pipeline is tiny, while the reduction in sales-rep load — and the corresponding opportunity to convert better on what remains — is large.
+          <strong>The model change drops volume disproportionately at the low-value end of the distribution.</strong> High-value opportunities are mostly preserved. The "loss" against total pipeline is tiny; the reduction in sales-rep load is large.
         </p>
         <p>
-          The diagnostic that made this finding land with stakeholders was the per-region breakdown, which revealed substantial heterogeneity. Regions whose lead mix skewed toward the touchpoint types that lost points were affected much more than regions whose mix skewed toward the touchpoint types that gained or held steady. The same model change is not the same intervention everywhere.
+          A per-region breakdown revealed substantial heterogeneity: regions whose lead mix skewed toward touchpoint types that lost points were affected far more than regions with a different mix. The same model change is not the same intervention everywhere.
         </p>
       </section>
 
       <section>
-        <h2>What I recommended</h2>
+        <h2>Recommendations</h2>
         <ul>
-          <li><strong>Don't roll the changes out globally based on the retrospective simulation alone.</strong> The simulation establishes that the structural impact on pipeline is small. It does not establish that sales reps will convert better on the new lead mix. Test that in a pilot.</li>
-          <li><strong>Run a single-region, quarter-long pilot.</strong> Pick the region whose current performance gives you the most signal-to-noise — historically stable lead volume, sufficient downstream conversion to detect effects, mix of touchpoint types that exposes the differentiation logic. Compare against that region's prior baseline and against the unmodified regions in the same period as a difference-in-differences-style read.</li>
-          <li><strong>Define success metrics that match the question.</strong> Not just "did conversion rate go up?" — that's mechanically guaranteed when you raise the bar. The actual question is whether downstream pipeline value <em>per unit of sales-rep effort</em> improves. Lead-engagement-status mix, time-to-disposition, and absolute pipeline-value-per-rep are the more honest indicators.</li>
-          <li><strong>Fix the data infrastructure.</strong> The single biggest constraint on this analysis was the lack of a reliable scoring-activity table. Building a proper export pipeline from the marketing automation platform — capturing every score change, every touchpoint, every threshold crossing, with timestamps — would make every future analysis like this one ten times faster and more rigorous. This is unglamorous, infrastructure-level work, and it's the highest-leverage thing the team can do for analytics maturity.</li>
+          <li><strong>Don't roll out globally based on the simulation alone.</strong> It establishes that the structural pipeline impact is small. It doesn't establish that sales reps will convert better on the new lead mix. Test that in a pilot first.</li>
+          <li><strong>Run a single-region, quarter-long pilot.</strong> Pick the region with historically stable lead volume, sufficient downstream conversion to detect effects, and a mix that exposes the differentiation logic. Compare against that region's prior baseline and against unmodified regions as a DiD-style read.</li>
+          <li><strong>Define success as pipeline value per unit of sales-rep effort</strong> — not conversion rate, which is mechanically guaranteed to rise when you raise the bar. Lead-engagement-status mix, time-to-disposition, and pipeline-value-per-rep are the more honest indicators.</li>
+          <li><strong>Fix the data infrastructure.</strong> The biggest constraint on this analysis was the absence of a reliable scoring-activity table. Building a proper export pipeline from the marketing automation platform — capturing every score change, touchpoint, and threshold crossing — would make every future analysis ten times faster.</li>
         </ul>
       </section>
 
       <section>
         <h2>What this project taught me</h2>
         <p>
-          <strong>Measurement is half the answer; framing is the other half.</strong> Two things made this work matter: a defensible methodology for estimating the impact of a change retrospectively, and a way of presenting the trade-off that didn't reduce a multi-dimensional decision to a single misleading number. Either one without the other would have been weaker.
+          <strong>Measurement is half the answer; framing is the other half.</strong> Two things made this work matter: a defensible methodology for estimating the impact of a change before making it, and a way of presenting the trade-off that didn't reduce a multi-dimensional decision to a single misleading number.
         </p>
         <p>
-          <strong>The model isn't the deliverable.</strong> The team was framing the problem as "fix the scoring model." What they actually needed was a better diagnostic loop: a way to tell, on an ongoing basis, when the model was drifting away from sales-rep needs, and a way to test changes before committing to them. The scoring tweak was one output of that loop; the bigger contribution was building the loop itself.
-        </p>
-        <p>
-          <strong>Honest uncertainty earns more than confident answers.</strong> The stakeholders making decisions on this work were sophisticated. They responded better to "here's what the data can and cannot tell you, and here's the pilot design that closes the gap" than they would have to "here's a single recommended number." That's the bar I want to keep working at.
+          <strong>The model isn't the deliverable.</strong> The team was framing the problem as "fix the scoring model." What they actually needed was a better diagnostic loop — a way to tell when the model was drifting from sales-rep needs, and a way to test changes before committing to them. The scoring tweak was one output of that loop; building the loop itself was the bigger contribution.
         </p>
       </section>
 
       <section>
         <h2>A note on this case study</h2>
         <p>
-          This work was conducted during my summer 2024 internship at Stripe. The case study describes the analytical methodology and reasoning patterns in abstracted form. Specific scoring values, regional breakdowns, dollar amounts, and identifying details have been omitted out of respect for confidentiality. Happy to walk through additional methodology depth in conversation.
+          This work was conducted during a summer 2024 internship on a B2B fintech GTM analytics team. The case study describes the analytical methodology in abstracted form. Specific scoring values, regional breakdowns, dollar amounts, and identifying details have been omitted out of respect for confidentiality. Happy to walk through additional methodology depth in conversation.
         </p>
       </section>
 
