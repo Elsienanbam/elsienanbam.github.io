@@ -4,7 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Elsie David — Data Scientist</title>
-  <meta name="description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS. Previously Stripe." />
+  <meta name="description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS." />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://elsienanbam.github.io/" />
+  <meta property="og:title" content="Elsie David — Data Scientist" />
+  <meta property="og:description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS." />
+  <meta property="og:image" content="https://elsienanbam.github.io/assets/elsie_headshot_smile.jpeg" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Elsie David — Data Scientist" />
+  <meta name="twitter:description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@500;600&display=swap" rel="stylesheet" />
@@ -300,6 +309,72 @@
       color: var(--ink-faint);
     }
 
+    /* Resume links */
+    nav .links a.nav-resume {
+      color: var(--accent);
+    }
+    nav .links a.nav-resume:hover { color: var(--accent); opacity: 0.8; }
+    .hero-resume {
+      margin-top: 16px;
+    }
+    .hero-resume a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .hero-resume a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* Closing CTA */
+    section.cta-section {
+      padding: 72px 0 80px;
+      background: var(--highlight);
+    }
+    .cta-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cta-eyebrow::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .cta-heading {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-bottom: 12px;
+      max-width: 520px;
+    }
+    .cta-body {
+      font-size: 16px;
+      color: var(--ink-soft);
+      line-height: 1.65;
+      margin-bottom: 28px;
+      max-width: 500px;
+    }
+    .cta-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
     /* Responsive */
     @media (max-width: 700px) {
       .hero-inner {
@@ -336,6 +411,7 @@
         <a href="#work">Work</a>
         <a href="#how">Approach</a>
         <a href="#about">About</a>
+        <a href="assets/Elsie_David_Resume.pdf" target="_blank" rel="noopener" class="nav-resume">Resume</a>
         <a href="mailto:elsienanbam@gmail.com">Contact</a>
       </div>
     </div>
@@ -348,7 +424,7 @@
           <div class="hero-eyebrow">Data Scientist · UC Berkeley MIMS</div>
           <h1>I use data to make ambiguous problems easier to reason about.</h1>
           <p class="lede">
-            I'm a data scientist with a UC Berkeley MIMS background, working across experimentation, causal inference, applied ML, and data systems. My work has ranged from lead scoring at Stripe to RAG over legal documents to causal analysis of housing interventions.
+            I'm a data scientist with a UC Berkeley MIMS background, working across experimentation, causal inference, applied ML, and data systems. My work includes B2B lead scoring model diagnostics, retrieval-augmented systems over legal corpora, and causal analysis of housing renovation outcomes.
           </p>
           <p class="personality">
             I'm especially drawn to messy, high-stakes questions: what should we measure, what can the data actually support, and how do we communicate the answer clearly enough for someone to act on it?
@@ -358,6 +434,9 @@
             <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
             <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
             <a href="https://github.com/elsienanbam" target="_blank" rel="noopener">GitHub</a>
+          </div>
+          <div class="hero-resume">
+            <a href="assets/Elsie_David_Resume.pdf" target="_blank" rel="noopener">View resume ↗</a>
           </div>
         </div>
         <div class="hero-photo">
@@ -380,7 +459,7 @@
             <div class="project-meta">2024 — 2025</div>
           </div>
           <p class="project-tagline">
-            A retrieval-augmented question-answering system that grounds plain-English answers in actual county statutes. Compared four retrieval pipelines and three embedding models on section-match metrics; shipped on Supabase pgvector with Claude 3 Opus and a citation-mandatory prompt.
+            A retrieval-augmented question-answering system that grounds plain-English answers in actual county statutes. Benchmarked six retrieval configurations and multiple embedding models on section-match metrics; shipped on Supabase pgvector with Claude 3 Opus and a citation-mandatory prompt.
           </p>
           <div class="project-tags">
             <span class="tag">RAG</span>
@@ -418,7 +497,7 @@
         <div class="project-card">
           <div class="project-header">
             <div class="project-title">Evaluating a B2B Lead Scoring Model: Quality vs. Quantity in Practice</div>
-            <div class="project-meta">Stripe · 2024</div>
+            <div class="project-meta">B2B fintech · 2024</div>
           </div>
           <p class="project-tagline">
             Diagnosed a five-year-old B2B lead scoring model, reconstructed it from secondary data sources because the source-of-truth table didn't exist, and simulated proposed scoring changes retrospectively. The framing — pipeline-value-preserved vs. MQL-volume-lost — supported the change set that contributed to a 70% YoY lift in lead conversion.
@@ -537,6 +616,18 @@
     </div>
   </section>
 
+  <section class="cta-section">
+    <div class="container">
+      <p class="cta-eyebrow">Open to new opportunities</p>
+      <h2 class="cta-heading">Looking for roles in data science, analytics, and applied ML.</h2>
+      <p class="cta-body">Especially interested in teams working on rigorous measurement problems, product experimentation, or research-adjacent data work.</p>
+      <div class="cta-actions">
+        <a href="assets/Elsie_David_Resume.pdf" target="_blank" rel="noopener" class="btn-primary">View Resume</a>
+        <a href="mailto:elsienanbam@gmail.com" class="btn-secondary">Get in touch</a>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="container">
       <div>Elsie David — Berkeley, CA</div>
@@ -544,6 +635,8 @@
         <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
         &nbsp;·&nbsp;
         <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
+        &nbsp;·&nbsp;
+        <a href="assets/Elsie_David_Resume.pdf" target="_blank" rel="noopener">Resume</a>
       </div>
     </div>
   </footer>
