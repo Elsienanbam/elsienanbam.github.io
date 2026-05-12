@@ -7,3 +7,4 @@ node_modules/
 .env.local
 .ipynb_checkpoints/
 .Rhistory
+LAUNCH_KIT.md
