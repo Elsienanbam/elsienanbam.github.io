@@ -7,124 +7,324 @@
   <meta name="description" content="Data scientist working at the intersection of experimentation, causal inference, and applied ML. UC Berkeley MIMS. Previously Stripe." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
-    /* Home-page-only styles (case studies use shared styles only) */
-    header { padding: 96px 0 72px; }
+    /* ─── Homepage-only styles ─────────────────────────── */
+
+    /* Hero */
+    header {
+      padding: 80px 0 72px;
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 56px;
+      align-items: center;
+    }
+    .hero-text {}
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 22px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
     header h1 {
-      font-size: 44px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      margin-bottom: 24px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      margin-bottom: 22px;
+      color: var(--ink);
     }
     header .lede {
-      font-size: 19px;
+      font-size: 17px;
       color: var(--ink-soft);
-      line-height: 1.55;
-      max-width: 640px;
+      line-height: 1.65;
+      max-width: 580px;
+      margin-bottom: 12px;
+    }
+    header .personality {
+      font-size: 16px;
+      color: var(--ink-faint);
+      font-style: italic;
+      line-height: 1.6;
+      max-width: 560px;
       margin-bottom: 32px;
     }
     header .meta {
       display: flex;
-      gap: 24px;
+      gap: 20px;
       flex-wrap: wrap;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--ink-faint);
       font-family: 'JetBrains Mono', monospace;
+      align-items: center;
+    }
+    header .meta .location {
+      color: var(--ink-faint);
     }
     header .meta a {
       color: var(--ink-soft);
       text-decoration: none;
       border-bottom: 1px solid var(--rule);
+      padding-bottom: 1px;
       transition: border-color 0.15s, color 0.15s;
     }
     header .meta a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* Photo */
+    .hero-photo {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .hero-photo-frame {
+      position: relative;
+      width: 240px;
+      height: 240px;
+    }
+    .hero-photo-frame::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f5ede9 0%, #fef3e7 100%);
+      z-index: 0;
+    }
+    .hero-photo-frame img {
+      position: relative;
+      z-index: 1;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    /* Sections */
     section { padding: 56px 0; border-top: 1px solid var(--rule); }
     .section-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+      color: var(--accent);
       margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .about p {
-      font-size: 17px;
-      color: var(--ink-soft);
-      margin-bottom: 20px;
-      line-height: 1.65;
+    .section-label::after {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 32px;
+      background: var(--accent);
+      opacity: 0.4;
     }
-    .about p:last-child { margin-bottom: 0; }
-    .about strong { color: var(--ink); font-weight: 600; }
-    .project {
-      padding: 32px 0;
-      border-bottom: 1px solid var(--rule);
+
+    /* Project cards */
+    .projects-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    .project:last-child { border-bottom: none; padding-bottom: 0; }
-    .project:first-child { padding-top: 0; }
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 28px 28px 24px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .project-card:hover {
+      box-shadow: 0 6px 28px rgba(0,0,0,0.07);
+      border-color: #d6cfc5;
+      transform: translateY(-2px);
+    }
+    .project-card:hover::before {
+      opacity: 1;
+    }
     .project-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       gap: 16px;
       flex-wrap: wrap;
     }
-    .project-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .project-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
     .project-meta {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--ink-faint);
+      flex-shrink: 0;
     }
     .project-tagline {
       color: var(--ink-soft);
-      font-size: 16px;
+      font-size: 15px;
       margin-bottom: 16px;
-      line-height: 1.55;
+      line-height: 1.6;
     }
-    .project-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .project-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
     .tag {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      padding: 4px 10px;
-      background: var(--card);
+      font-size: 10px;
+      padding: 3px 9px;
+      background: var(--bg);
       border: 1px solid var(--rule);
-      border-radius: 4px;
-      color: var(--ink-soft);
+      border-radius: 3px;
+      color: var(--ink-faint);
     }
-    .project-links { display: flex; gap: 20px; font-size: 14px; }
+    .project-links { display: flex; gap: 20px; font-size: 13px; }
     .project-links a {
       color: var(--accent);
       text-decoration: none;
+      font-weight: 500;
       border-bottom: 1px solid transparent;
       transition: border-color 0.15s;
     }
     .project-links a:hover { border-bottom-color: var(--accent); }
+
+    /* How I work */
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .how-item {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .how-num {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--accent);
+      opacity: 0.35;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: -2px;
+    }
+    .how-text {
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    .how-text strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    /* About */
+    .about p {
+      font-size: 16px;
+      color: var(--ink-soft);
+      margin-bottom: 18px;
+      line-height: 1.7;
+    }
+    .about p:last-child { margin-bottom: 0; }
+    .about strong { color: var(--ink); font-weight: 600; }
+
+    /* Skills */
     .skills-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 24px;
     }
+    .skill-group {
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+    }
     .skill-group h3 {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--ink);
-      margin-bottom: 10px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 12px;
     }
     .skill-group ul {
       list-style: none;
       font-size: 14px;
       color: var(--ink-soft);
-      line-height: 1.85;
+      line-height: 1.9;
     }
-    @media (max-width: 600px) {
-      header { padding: 64px 0 48px; }
-      header h1 { font-size: 34px; }
-      header .lede { font-size: 17px; }
+    .skill-group ul li::before {
+      content: '·  ';
+      color: var(--ink-faint);
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+      .hero-photo {
+        order: -1;
+        justify-content: flex-start;
+      }
+      .hero-photo-frame,
+      .hero-photo-frame img {
+        width: 160px;
+        height: 160px;
+      }
+      header { padding: 56px 0 48px; }
+      header h1 { font-size: 30px; }
+      header .lede { font-size: 16px; }
+      header .personality { font-size: 15px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .project-card { padding: 22px 20px 18px; }
+    }
+    @media (max-width: 480px) {
+      header h1 { font-size: 26px; }
+      .skills-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -134,8 +334,8 @@
       <div class="name">Elsie David</div>
       <div class="links">
         <a href="#work">Work</a>
+        <a href="#how">Approach</a>
         <a href="#about">About</a>
-        <a href="#skills">Skills</a>
         <a href="mailto:elsienanbam@gmail.com">Contact</a>
       </div>
     </div>
@@ -143,15 +343,28 @@
 
   <header>
     <div class="container">
-      <h1>Data scientist working on experimentation, causal inference, and applied ML.</h1>
-      <p class="lede">
-        I translate ambiguous business questions into rigorous analysis. Recently shipped a 70% YoY lift in lead conversion at Stripe, built a production RAG pipeline for unstructured legal documents, and measured housing intervention effects using synthetic control methods at Berkeley.
-      </p>
-      <div class="meta">
-        <span>Berkeley, CA</span>
-        <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
-        <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">Data Scientist · UC Berkeley MIMS</div>
+          <h1>I use data to make ambiguous problems easier to reason about.</h1>
+          <p class="lede">
+            I'm a data scientist with a UC Berkeley MIMS background, working across experimentation, causal inference, applied ML, and data systems. My work has ranged from lead scoring at Stripe to RAG over legal documents to causal analysis of housing interventions.
+          </p>
+          <p class="personality">
+            I'm especially drawn to messy, high-stakes questions: what should we measure, what can the data actually support, and how do we communicate the answer clearly enough for someone to act on it?
+          </p>
+          <div class="meta">
+            <span class="location">Berkeley, CA</span>
+            <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
+            <a href="https://linkedin.com/in/elsienanbamdavid/" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://github.com/elsienanbam" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <div class="hero-photo">
+          <div class="hero-photo-frame">
+            <img src="assets/elsie_headshot_smile.jpeg" alt="Elsie David" />
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -159,65 +372,103 @@
   <section id="work">
     <div class="container">
       <div class="section-label">Selected work</div>
+      <div class="projects-grid">
 
-      <div class="project">
-        <div class="project-header">
-          <div class="project-title">Unbarred — RAG over California county legal codes</div>
-          <div class="project-meta">2024 — 2025</div>
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-title">Unbarred — RAG over California county legal codes</div>
+            <div class="project-meta">2024 — 2025</div>
+          </div>
+          <p class="project-tagline">
+            A retrieval-augmented question-answering system that grounds plain-English answers in actual county statutes. Compared four retrieval pipelines and three embedding models on section-match metrics; shipped on Supabase pgvector with Claude 3 Opus and a citation-mandatory prompt.
+          </p>
+          <div class="project-tags">
+            <span class="tag">RAG</span>
+            <span class="tag">FAISS</span>
+            <span class="tag">Retrieval Evaluation</span>
+            <span class="tag">Claude / Prompt Design</span>
+            <span class="tag">Supabase pgvector</span>
+          </div>
+          <div class="project-links">
+            <a href="case-studies/unbarred.html">Read case study →</a>
+            <a href="https://github.com/LawNavigator-mims/law-nav-model-api" target="_blank" rel="noopener">Code</a>
+          </div>
         </div>
-        <p class="project-tagline">
-          A retrieval-augmented question-answering system that grounds plain-English answers in actual county statutes. Compared four retrieval pipelines and three embedding models on section-match metrics; shipped on Supabase pgvector with Claude 3 Opus and a citation-mandatory prompt.
-        </p>
-        <div class="project-tags">
-          <span class="tag">RAG</span>
-          <span class="tag">FAISS</span>
-          <span class="tag">Retrieval Evaluation</span>
-          <span class="tag">Claude / Prompt Design</span>
-          <span class="tag">Supabase pgvector</span>
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-title">Habitat for Humanity — measuring renovation impact</div>
+            <div class="project-meta">2025</div>
+          </div>
+          <p class="project-tagline">
+            Three-method causal analysis of $12.25M in home renovations across 34 Philadelphia ZIP codes. Difference-in-differences, neighbor comparison, and synthetic control with placebo testing — all converging on a careful null result, and a recommendation for what to measure instead.
+          </p>
+          <div class="project-tags">
+            <span class="tag">Causal Inference</span>
+            <span class="tag">Diff-in-Diff</span>
+            <span class="tag">Synthetic Control</span>
+            <span class="tag">Placebo Tests</span>
+            <span class="tag">Python · R</span>
+          </div>
+          <div class="project-links">
+            <a href="case-studies/habitat.html">Read case study →</a>
+          </div>
         </div>
-        <div class="project-links">
-          <a href="case-studies/unbarred.html">Read case study →</a>
-          <a href="https://github.com/LawNavigator-mims/law-nav-model-api" target="_blank" rel="noopener">Code</a>
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-title">Lead scoring &amp; the conversion-quality trade-off</div>
+            <div class="project-meta">Stripe · 2024</div>
+          </div>
+          <p class="project-tagline">
+            Diagnosed a five-year-old B2B lead scoring model, reconstructed it from secondary data sources because the source-of-truth table didn't exist, and simulated proposed scoring changes retrospectively. The framing — pipeline-value-preserved vs. MQL-volume-lost — supported the change set that contributed to a 70% YoY lift in lead conversion.
+          </p>
+          <div class="project-tags">
+            <span class="tag">SQL</span>
+            <span class="tag">Retrospective Simulation</span>
+            <span class="tag">Trade-off Communication</span>
+            <span class="tag">Pilot Design</span>
+          </div>
+          <div class="project-links">
+            <a href="case-studies/lead-scoring.html">Read case study →</a>
+          </div>
         </div>
+
       </div>
+    </div>
+  </section>
 
-      <div class="project">
-        <div class="project-header">
-          <div class="project-title">Habitat for Humanity — measuring renovation impact</div>
-          <div class="project-meta">2025</div>
+  <section id="how">
+    <div class="container">
+      <div class="section-label">How I work</div>
+      <div class="how-grid">
+        <div class="how-item">
+          <div class="how-num">1</div>
+          <div class="how-text">
+            <strong>Define the decision before choosing the method.</strong>
+            I start with what someone needs to do differently — then work backward to the analysis that would actually inform it.
+          </div>
         </div>
-        <p class="project-tagline">
-          Three-method causal analysis of $12.25M in home renovations across 34 Philadelphia ZIP codes. Difference-in-differences, neighbor comparison, and synthetic control with placebo testing — all converging on a careful null result, and a recommendation for what to measure instead.
-        </p>
-        <div class="project-tags">
-          <span class="tag">Causal Inference</span>
-          <span class="tag">Diff-in-Diff</span>
-          <span class="tag">Synthetic Control</span>
-          <span class="tag">Placebo Tests</span>
-          <span class="tag">Python · R</span>
+        <div class="how-item">
+          <div class="how-num">2</div>
+          <div class="how-text">
+            <strong>Take metrics, assumptions, and uncertainty seriously.</strong>
+            The interesting work is usually deciding what to measure and being honest about what the data can't support.
+          </div>
         </div>
-        <div class="project-links">
-          <a href="case-studies/habitat.html">Read case study →</a>
+        <div class="how-item">
+          <div class="how-num">3</div>
+          <div class="how-text">
+            <strong>Turn messy systems into clear decision paths.</strong>
+            I like finding the structure inside complex, ambiguous problems and making it legible.
+          </div>
         </div>
-      </div>
-
-      <div class="project">
-        <div class="project-header">
-          <div class="project-title">Lead scoring &amp; funnel experimentation</div>
-          <div class="project-meta">2026</div>
-        </div>
-        <p class="project-tagline">
-          Methodology recreation on a public marketing funnel dataset, mirroring the analytical pattern that contributed to a 70% YoY lift in lead conversion during my Stripe internship. Feature analysis, signal reweighting, and experiment design for the conversion-vs-quality trade-off.
-        </p>
-        <div class="project-tags">
-          <span class="tag">SQL</span>
-          <span class="tag">Experimentation</span>
-          <span class="tag">Feature Analysis</span>
-          <span class="tag">Lead Scoring</span>
-        </div>
-        <div class="project-links">
-          <a href="case-studies/lead-scoring.html">Read case study →</a>
-          <a href="https://github.com/" target="_blank" rel="noopener">Code</a>
+        <div class="how-item">
+          <div class="how-num">4</div>
+          <div class="how-text">
+            <strong>Build analyses stakeholders can actually use.</strong>
+            Results land when they're framed in terms of the decision at hand — not just statistical significance.
+          </div>
         </div>
       </div>
     </div>

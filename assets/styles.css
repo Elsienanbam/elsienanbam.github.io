@@ -8,6 +8,7 @@
   --accent: #b8462b;
   --card: #ffffff;
   --highlight: #fef3e7;
+  --accent-warm: #f5ede9;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
