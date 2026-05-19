@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triage: Calibrated Eviction Risk Scoring for Housing Outreach · Elsie David</title>
+  <meta name="description" content="Case study: building a calibrated, interpretable eviction risk model for housing nonprofits allocating outreach capacity across Ohio census tracts." />
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://elsienanbam.github.io/case-studies/triage.html" />
+  <meta property="og:title" content="Triage: Calibrated Eviction Risk Scoring · Elsie David" />
+  <meta property="og:description" content="LightGBM + Platt scaling trained on Princeton Eviction Lab data. AUC 0.948, Brier 0.077, SHAP interpretability, fairness analysis across racial and income subgroups." />
+  <meta property="og:image" content="https://elsienanbam.github.io/assets/elsie_headshot_smile.jpeg" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a class="name" href="../index.html">Elsie David</a>
+      <div class="links">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#about">About</a>
+        <a href="mailto:elsienanbam@gmail.com">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="case-header">
+    <div class="container">
+      <a class="case-back" href="../index.html">← Back to all work</a>
+      <div class="case-eyebrow">Case study · Predictive modeling</div>
+      <h1>Triage: Calibrated Eviction Risk Scoring for Housing Outreach</h1>
+      <p class="case-subtitle">Helping nonprofits allocate limited capacity to the tracts that need it most</p>
+      <p class="case-lede">
+        Housing nonprofits can only reach so many neighborhoods per quarter. This project builds a calibrated risk-scoring model that ranks Ohio census tracts by near-term eviction risk — giving caseworkers a principled, interpretable tool to prioritize outreach. The interesting work was making the model's probabilities trustworthy, understanding which features drive them, and being honest about where the model's errors fall unequally.
+      </p>
+      <div class="case-meta">
+        <div class="case-meta-item"><div class="label">Role</div><div class="value">Solo — modeling, calibration, fairness analysis, dashboard</div></div>
+        <div class="case-meta-item"><div class="label">Stack</div><div class="value">Python · LightGBM · scikit-learn · SHAP · Streamlit</div></div>
+        <div class="case-meta-item"><div class="label">Data</div><div class="value">Princeton Eviction Lab · ACS 5-year estimates</div></div>
+        <div class="case-meta-item"><div class="label">Context</div><div class="value">Portfolio project · May 2026</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-body">
+    <div class="container">
+
+      <section>
+        <div class="at-a-glance">
+          <div class="at-a-glance-item">
+            <div class="aag-label">Problem</div>
+            <div class="aag-value">Housing nonprofits have limited outreach capacity. Which census tracts are most likely to face elevated eviction risk in the near term?</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Methods</div>
+            <div class="aag-value">LightGBM with temporal train/test split, Platt scaling calibration, SHAP tree explainer, subgroup fairness analysis (precision / recall / FPR by racial composition and income quintile).</div>
+          </div>
+          <div class="at-a-glance-item">
+            <div class="aag-label">Key takeaway</div>
+            <div class="aag-value">Strong predictive ranking (AUC 0.948) with meaningfully improved calibration after Platt scaling (Brier 0.095 → 0.077). The most important finding is about error distribution: false-positive rates are 16× higher in majority-Black tracts — a pattern that is real, operationally significant, and not resolved by the model alone.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The problem</h2>
+        <p>
+          Eviction is one of the most destabilizing events in a renter's life — it damages credit, disrupts children's schooling, and concentrates risk in neighborhoods already facing housing instability. Community organizations that do eviction prevention work — legal aid, tenant counseling, landlord mediation — face a constant resource allocation problem: their capacity is finite, geography is large, and the tracts that most need outreach aren't always obvious from ZIP-code intuition.
+        </p>
+        <p>
+          This project asks: can historical eviction data and public socioeconomic indicators predict which census tracts are heading toward elevated filing rates in the near term? If so, can a nonprofit caseworker actually use those predictions — meaning the scores are well-calibrated, the drivers are interpretable, and the equity implications are disclosed?
+        </p>
+      </section>
+
+      <section>
+        <h2>The data</h2>
+        <div class="results-grid">
+          <div class="result-card"><div class="number">31,118</div><div class="label">Tract-year observations (Ohio, 2003–2018)</div></div>
+          <div class="result-card"><div class="number">81</div><div class="label">Ohio counties</div></div>
+          <div class="result-card"><div class="number">14</div><div class="label">Model features (temporal lags + ACS socioeconomic)</div></div>
+          <div class="result-card"><div class="number">24.2%</div><div class="label">Prevalence of "high-risk" label in dataset</div></div>
+        </div>
+        <p>
+          Two sources: the <strong>Princeton Eviction Lab</strong> tract-level dataset (eviction filing rates per 100 renter households, 2000–2018), and <strong>ACS 5-year estimates</strong> (poverty rate, unemployment, median household income, renter share, rent burden, racial composition). The unit of analysis is a census tract in a given year.
+        </p>
+        <p>
+          The target variable — "high-risk" — is defined as a tract above the 75th percentile of statewide filing rates, where that threshold is computed on the training period (2003–2014) and held fixed across all years. This is a relative label calibrated to the Ohio distribution, not an absolute filing-rate cutoff. A tract scoring "high-risk" in 2017 exceeded the same threshold as a tract scoring "high-risk" in 2008.
+        </p>
+        <p>
+          The train/test split is strictly temporal: training on 2003–2014 (24,283 tract-years), testing on 2015–2016 (4,454 tract-years). All reported metrics — AUC, average precision, Brier score — are based on the held-out 2015–2016 test set. The model uses each year's prior-year lag features to predict that year's risk status, so predictions are grounded in observable history at the time they would be made.
+        </p>
+      </section>
+
+      <section>
+        <h2>Feature engineering</h2>
+        <p>
+          The most predictive features aren't the raw socioeconomic indicators — they're the temporal structure of eviction patterns. I engineered three lag features (filing rate in the prior 1, 2, and 3 years) and a trend feature (the difference between lag1 and lag3, capturing whether rates are rising or falling). These capture both the level and trajectory of a tract's eviction history.
+        </p>
+        <p>
+          The remaining 10 features come from ACS 5-year estimates: poverty rate, unemployment rate, median household income, renter share, rent burden, rent-to-income ratio, median gross rent, and three racial composition variables (pct_black, pct_hispanic, pct_white). All 14 features are inputs to the model. The racial composition variables appear as predictors and are also the basis for the subgroup fairness evaluation in the next section.
+        </p>
+      </section>
+
+      <section>
+        <h2>Modeling</h2>
+        <p>
+          I trained two models: a logistic regression baseline (L2-regularized, class-balanced) and a LightGBM gradient boosting model with early stopping. LightGBM handles the feature correlations and nonlinearities in the socioeconomic predictors better than logistic regression, and the early stopping on a held-out validation fold controlled overfitting.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Model</th><th>Test AUC-ROC</th><th>Test Avg Precision</th><th>Test Brier Score</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Logistic regression (baseline)</td><td>0.945</td><td>0.802</td><td>0.095</td></tr>
+            <tr><td>LightGBM (uncalibrated)</td><td>0.948</td><td>0.826</td><td>0.095</td></tr>
+            <tr><td><strong>LightGBM + Platt scaling</strong></td><td><strong>0.948</strong></td><td><strong>0.826</strong></td><td><strong>0.077</strong></td></tr>
+          </tbody>
+        </table>
+        <p>
+          Both models performed strongly — AUC of 0.948 means the model correctly ranks a high-risk tract above a low-risk one 94.8% of the time. The logistic baseline is remarkably competitive, which is worth noting: for a dataset with good temporal lag structure, linear models often close most of the gap. LightGBM adds lift mainly in the high-recall, low-precision region of the operating curve — exactly where outreach prioritization needs it most.
+        </p>
+      </section>
+
+      <section>
+        <h2>Calibration</h2>
+        <p>
+          A model can rank tracts correctly (high AUC) while still producing miscalibrated probabilities — scores that don't correspond meaningfully to real-world risk rates. For a tool that caseworkers will read as "70% chance of high risk," calibration isn't optional.
+        </p>
+        <p>
+          LightGBM's raw probabilities were slightly overconfident: the reliability diagram showed predicted probabilities running above the 45° diagonal in the mid-range. I applied <strong>Platt scaling</strong> (sigmoid calibration via <code>CalibratedClassifierCV</code> with <code>cv='prefit'</code>), fitting the sigmoid on the same held-out validation fold used for early stopping — no data leakage. The Brier score dropped from 0.095 to <strong>0.077</strong>, and the reliability diagram tightened meaningfully to the diagonal.
+        </p>
+        <p>
+          After calibration, a score of 0.60 means roughly 60% of tracts at that score are genuinely in the top-quartile eviction tier. The scores are interpretable in the way the tool requires.
+        </p>
+      </section>
+
+      <section>
+        <h2>SHAP interpretability</h2>
+        <p>
+          SHAP (SHapley Additive exPlanations) decomposes each prediction into per-feature contributions, giving both global feature importance and individual-prediction explanations. I computed exact SHAP values using the tree explainer on the test set.
+        </p>
+        <p>
+          The top drivers by mean absolute SHAP value: <strong>prior-year filing rate</strong> (strongest single predictor by a wide margin), <strong>poverty rate</strong>, <strong>rent burden rate</strong>, <strong>three-year filing rate trend</strong>, and <strong>renter share</strong>. Racial composition features (pct_black, pct_hispanic, pct_white) are included as model inputs and do appear in the SHAP rankings, but with lower mean absolute contributions than the economic and filing-history features.
+        </p>
+        <p>
+          The fact that racial composition features have lower SHAP importance than economic features does not mean the model is race-neutral. These variables are correlated, and a model that includes both will partly route their shared signal through whichever features it weights more heavily. The fairness section examines what the model's errors look like across racial and income subgroups directly.
+        </p>
+      </section>
+
+      <section>
+        <h2>Fairness analysis</h2>
+        <p>
+          The most important part of this project isn't the AUC — it's what the model gets wrong, and where. I evaluated precision, recall, and false positive rate across two dimensions: the racial composition of a tract (% Black residents, quintiled) and its median household income (quintiled).
+        </p>
+        <p>
+          The findings are stark. <strong>The false positive rate is 16× higher in majority-Black tracts (36.6%) than in predominantly-white tracts (2.3%)</strong>. For income, the FPR is 9.4× higher in the lowest-income quintile vs. the highest. At the same time, recall is 91% in majority-Black tracts vs. 56% in predominantly-white tracts — meaning the model catches nearly all genuinely at-risk tracts in stressed neighborhoods, but it also flags a much larger share of non-at-risk tracts there.
+        </p>
+        <p>
+          Part of what drives the disparity is that majority-Black and low-income tracts have much higher eviction prevalence in this dataset (50% in the highest-Black quintile vs. 5% in the lowest). A model trained on this distribution will assign higher scores throughout those tracts — including to tracts that are not actually high-risk in a given year. But observing that prevalence differences contribute to FPR gaps is not the same as explaining the gap away. The model includes racial composition as direct inputs, it is trained on data that reflects structural inequalities in the housing system, and the disparity in errors is real regardless of its proximate causes.
+        </p>
+        <div class="callout">
+          <strong>The FPR disparity is real and operationally significant, regardless of its source.</strong> If caseworkers use this model at a fixed threshold of 0.5, they will spend a disproportionate share of their false-positive effort in majority-Black, low-income tracts. Whether this is acceptable depends on the cost structure of the intervention — low-cost outreach (a mailer) vs. expensive in-person visits require different answers.
+        </div>
+        <p>
+          The Streamlit dashboard surfaces this disparity explicitly, with threshold sensitivity tables and subgroup FPR warnings. The fairness analysis motivates three possible responses — accepting the disparity at the recommended threshold, raising the threshold in high-prevalence groups to equalize FPR, or applying a capacity cap per demographic group — but which response is appropriate depends on program cost structure and policy goals, not just model output.
+        </p>
+      </section>
+
+      <section>
+        <h2>Threshold optimization</h2>
+        <p>
+          A binary classifier at a fixed 0.5 threshold is the wrong frame for resource-constrained outreach. The right question is: given that a nonprofit can reach N tracts per quarter, what threshold maximizes coverage of truly at-risk tracts?
+        </p>
+        <table>
+          <thead>
+            <tr><th>Threshold</th><th>Precision</th><th>Recall</th><th>% Tracts Flagged</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0.20</td><td>52%</td><td>95%</td><td>36%</td><td>Max coverage — low-cost outreach (mailers)</td></tr>
+            <tr><td><strong>0.35</strong></td><td><strong>64%</strong></td><td><strong>87%</strong></td><td><strong>24%</strong></td><td><strong>Balanced — recommended default</strong></td></tr>
+            <tr><td>0.50</td><td>72%</td><td>76%</td><td>18%</td><td>Precision-focused — limited field capacity</td></tr>
+            <tr><td>0.60</td><td>77%</td><td>64%</td><td>14%</td><td>High confidence — very constrained capacity</td></tr>
+          </tbody>
+        </table>
+        <p>
+          At the recommended threshold of 0.35, the model flags roughly 1 in 4 tracts, catches 87% of the genuinely high-risk ones, and maintains 64% precision. The 13% of at-risk tracts that go unflagged are mostly borderline cases with lower recent filing histories — the tracts the model is genuinely uncertain about.
+        </p>
+      </section>
+
+      <section>
+        <h2>The dashboard</h2>
+        <p>
+          The Streamlit dashboard is designed for a caseworker who needs to make decisions, not a data scientist who wants to explore model internals. It surfaces: a tract-level risk table sorted by score, a top-10 highest-risk list, a county-level aggregation view, and a threshold sensitivity panel. The fairness figures live in a dedicated tab with explicit warnings about FPR disparity.
+        </p>
+        <p>
+          The threshold slider is the most important UI element — it directly controls how many tracts get flagged and gives the organization a lever to match the model's output to their actual outreach capacity. A nonprofit with 50 caseworkers uses a different threshold than one with 5.
+        </p>
+      </section>
+
+      <section>
+        <h2>Connection to Habitat</h2>
+        <p>
+          This project is a deliberate extension of the Habitat causal study. Habitat looked backwards — did past renovations affect home values? Triage looks forward — which neighborhoods are heading toward eviction stress? Both are housing questions, both involve census tract data, and both confront the gap between what data can say and what decision-makers need to act.
+        </p>
+        <p>
+          The key difference is the inferential mode. Habitat's null result was a measurement finding — we couldn't detect an effect, partly because the measurement instrument couldn't capture interior repairs. Triage's model produces strong predictive rankings but has a fairness finding — it detects risk effectively, but distributes its errors unequally. In both cases, the honest conclusion is more useful than the headline metric.
+        </p>
+      </section>
+
+      <section>
+        <h2>What this project taught me</h2>
+        <p>
+          <strong>Calibration is a product decision, not just a technical one.</strong> AUC tells you if the model can rank. Brier score tells you if the ranks correspond to real probabilities. A caseworker who reads a score of 0.70 needs to know that 70% means something — otherwise the output is a ranking dressed up as a probability. Platt scaling on a prefit model is three lines of code; explaining why it matters takes much longer.
+        </p>
+        <p>
+          <strong>Fairness analysis belongs in the model card, not a footnote.</strong> The FPR disparity across racial groups is the most operationally significant result in this project — more significant than the AUC improvement from LightGBM over logistic regression. It should lead any briefing with a nonprofit partner, not follow it.
+        </p>
+        <p>
+          <strong>The threshold is a policy choice.</strong> Nothing in the model determines whether to flag 18% of tracts or 36%. That decision belongs to the organization, based on their capacity, cost structure, and equity priorities. The model's job is to make that trade-off legible; the organization's job is to make the call.
+        </p>
+      </section>
+
+      <section>
+        <h2>Technical details</h2>
+        <ul>
+          <li><strong>Data</strong>: Princeton Eviction Lab tract-level dataset (2000–2018) merged with ACS 5-year estimates via FIPS code. State scope: Ohio (81 counties, ~2,800 census tracts).</li>
+          <li><strong>Target</strong>: Binary — top quartile of statewide eviction filing rate for the tract-year. Prevalence: 24.2% positive.</li>
+          <li><strong>Train/test split</strong>: Temporal — train 2003–2014 (24,283 obs), held-out test 2015–2016 (4,454 obs).</li>
+          <li><strong>Features</strong>: 4 temporal lag/trend features, 7 ACS economic and housing indicators, 3 racial composition variables (pct_black, pct_hispanic, pct_white). ACS missingness imputed via county-level median.</li>
+          <li><strong>Model</strong>: LightGBM with early stopping (validation AUC), class_weight='balanced' to handle 76/24 imbalance.</li>
+          <li><strong>Calibration</strong>: Platt scaling via <code>CalibratedClassifierCV(cv='prefit')</code>, fitted on early-stopping validation fold.</li>
+          <li><strong>Interpretability</strong>: Exact SHAP values via <code>shap.TreeExplainer</code> on test set (4,454 observations, 14 features).</li>
+          <li><strong>Fairness</strong>: Subgroup evaluation by pct_black quintile and median_household_income quintile on test set only.</li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div>Elsie David — Berkeley, CA</div>
+      <div>
+        <a href="../index.html">Home</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:elsienanbam@gmail.com">elsienanbam@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
